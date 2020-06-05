@@ -13,8 +13,8 @@ public class Register implements Listener {
 
         registerEvents(
                 new GameStart(),
-                new FlagCapture(),
-                new FlagReturned(),
+                new FlagCaptured(),
+                new FlagDeposited(),
                 new GameEnd(),
                 new Checks()
         );

@@ -1,10 +1,7 @@
 package com.darko.plugin.gameclasses;
 
-import com.darko.plugin.Main;
-import com.darko.plugin.commands.CTFCommandTabComplete;
-import org.bukkit.block.Block;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,8 +16,6 @@ public class Game {
 
     Participant flagCarrier;
 
-    Block flag;
-
     Integer flagRadius;
 
     Integer flagParticleCount;
@@ -28,6 +23,16 @@ public class Game {
     Integer secondsNeededForCapture;
 
     Integer pointsNeededToWin;
+
+    List<Flag> flags = new ArrayList<>();
+
+    Location flagDepositLocation;
+
+    Location finalRespawnLocation;
+
+    Integer deathTimer;
+
+    String winnerPermission;
 
 
     public List<Participant> getParticipants() {
@@ -46,13 +51,17 @@ public class Game {
         this.participants.add(participant);
     }
 
-    public Participant getParticipantFromPlayer(Player player){
-        for(Participant p : this.participants){
-            if(p.getPlayer().equals(player)){
+    public Participant getParticipantFromPlayer(Player player) {
+        for (Participant p : this.participants) {
+            if (p.getPlayer().equals(player)) {
                 return p;
             }
         }
         return null;
+    }
+
+    public void clearParticipants() {
+        this.participants.clear();
     }
 
 
@@ -68,43 +77,18 @@ public class Game {
         this.teams.add(team);
     }
 
+    public void removeTeam(Team team) {this.teams.remove(team);}
+
 
     public List<Kit> getKits() {
         return this.kits;
     }
 
     public Kit getKitByName(String name) {
-
-        this.kits.clear();
-
-        for (String s : CTFCommandTabComplete.getKitNames()) {
-
-            Kit kit = new Kit();
-
-            kit.setName(s);
-
-            String inventory = Main.getInstance().getConfig().getString("Kits." + s + ".Inventory");
-            kit.setInventory(inventory);
-
-            List<String> availableAbilities = Main.getInstance().getConfig().getStringList("Kits." + s + ".AvailableAbilities");
-            kit.setAvailableAbilities(availableAbilities);
-
-            ItemStack icon = null;
-            if (Main.getInstance().getConfig().getItemStack("Kits." + s + ".Icon") != null) {
-                icon = Main.getInstance().getConfig().getItemStack("Kits." + s + ".Icon");
-            }
-            kit.setIcon(icon);
-
-            this.kits.add(kit);
-
-        }
-
         for (Kit k : this.kits) {
             if (k.getName().equalsIgnoreCase(name)) return k;
         }
-
         return null;
-
     }
 
     public void setAvailableKits(List<Kit> kits) {
@@ -125,13 +109,13 @@ public class Game {
     }
 
 
-    public Block getFlag() {
-        return this.flag;
-    }
-
-    public void setFlag(Block flag) {
-        this.flag = flag;
-    }
+//    public Block getFlag() {
+//        return this.flag;
+//    }
+//
+//    public void setFlag(Block flag) {
+//        this.flag = flag;
+//    }
 
 
     public Integer getFlagRadius() {
@@ -161,8 +145,67 @@ public class Game {
     }
 
 
-    public Integer getPointsNeededToWin(){return this.pointsNeededToWin;}
+    public Integer getPointsNeededToWin() {
+        return this.pointsNeededToWin;
+    }
 
-    public void setPointsNeededToWin(Integer pointsNeededToWin){this.pointsNeededToWin = pointsNeededToWin;}
+    public void setPointsNeededToWin(Integer pointsNeededToWin) {
+        this.pointsNeededToWin = pointsNeededToWin;
+    }
 
+
+    public List<Flag> getFlags() {
+        return this.flags;
+    }
+
+    public void setFlags(List<Flag> flags) {
+        this.flags = flags;
+    }
+
+    public Flag getFlagFromTeam(Team team) {
+        for (Flag f : flags) {
+            if (f.getTeam().equals(team)) {
+                return f;
+            }
+        }
+        return null;
+    }
+
+    public void addFlag(Flag flag){this.flags.add(flag);}
+
+
+    public Location getFlagDepositLocation() {
+        return flagDepositLocation;
+    }
+
+    public void setFlagDepositLocation(Location flagDepositLocation) {
+        this.flagDepositLocation = flagDepositLocation;
+    }
+
+
+    public Location getFinalRespawnLocation() {
+        return finalRespawnLocation;
+    }
+
+    public void setFinalRespawnLocation(Location finalRespawnLocation) {
+        this.finalRespawnLocation = finalRespawnLocation;
+    }
+
+
+    public Integer getDeathTimer() {
+        return deathTimer;
+    }
+
+    public void setDeathTimer(Integer deathTimer) {
+        this.deathTimer = deathTimer;
+    }
+
+
+    public String getWinnerPermission() {
+        return winnerPermission;
+    }
+
+    public void setWinnerPermission(String winnerPermission) {
+        this.winnerPermission = winnerPermission;
+    }
 }

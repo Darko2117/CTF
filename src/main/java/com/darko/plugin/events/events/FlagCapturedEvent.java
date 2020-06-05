@@ -1,18 +1,26 @@
 package com.darko.plugin.events.events;
 
-import com.darko.plugin.gameclasses.Participant;
+import com.darko.plugin.gameclasses.Team;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
 public class FlagCapturedEvent extends Event {
 
-    Participant carrier;
+    Team teamWhoCapturedTheFlag;
+    Team teamWhosFlagHasBeenCaptured;
 
-    public FlagCapturedEvent(Participant carrier){
-        this.carrier = carrier;
+    public FlagCapturedEvent(Team teamWhoCapturedTheFlag, Team teamWhosFlagHasBeenCaptured) {
+        this.teamWhoCapturedTheFlag = teamWhoCapturedTheFlag;
+        this.teamWhosFlagHasBeenCaptured = teamWhosFlagHasBeenCaptured;
     }
 
-    public Participant getCarrier(){return this.carrier;}
+    public Team getTeamWhosFlagHasBeenCaptured() {
+        return this.teamWhosFlagHasBeenCaptured;
+    }
+
+    public Team getTeamWhoCapturedTheFlag() {
+        return this.teamWhoCapturedTheFlag;
+    }
 
     private static final HandlerList HANDLERS = new HandlerList();
 

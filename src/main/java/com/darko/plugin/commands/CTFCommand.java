@@ -44,11 +44,14 @@ public class CTFCommand implements CommandExecutor {
         if (args[0].equalsIgnoreCase("kit")) Kit(sender, args);
         if (args[0].equalsIgnoreCase("team")) Team(sender, args);
         if (args[0].equalsIgnoreCase("setdefaultkit")) SetDefaultKit(sender, args);
-        if (args[0].equalsIgnoreCase("setflaglocation")) SetFlagLocation(sender, args);
+        if (args[0].equalsIgnoreCase("setflagdepositlocation")) SetFlagDepositLocation(sender, args);
         if (args[0].equalsIgnoreCase("setflagradius")) SetFlagRadius(sender, args);
         if (args[0].equalsIgnoreCase("setflagparticlecount")) SetFlagParticleCount(sender, args);
         if (args[0].equalsIgnoreCase("setsecondsneededforcapture")) SetSecondsNeededForCapture(sender, args);
         if (args[0].equalsIgnoreCase("setpointsneededtowin")) SetPointsNeededToWin(sender, args);
+        if (args[0].equalsIgnoreCase("setfinalrespawnpoint")) SetFinalRespawnPoint(sender, args);
+        if (args[0].equalsIgnoreCase("setdeathtimer")) SetDeathTimer(sender, args);
+        if (args[0].equalsIgnoreCase("setwinnerpermission")) SetWinnerPermission(sender, args);
 
         return false;
     }
@@ -71,7 +74,9 @@ public class CTFCommand implements CommandExecutor {
     }
 
     private void Stop() {
+
         GameManager.setActiveGame(null);
+
     }
 
     private void Reload() {
@@ -104,7 +109,7 @@ public class CTFCommand implements CommandExecutor {
         if (args[1].equalsIgnoreCase("addspawnlocation")) teamAddSpawnLocation(sender, args);
         if (args[1].equalsIgnoreCase("setdisplayname")) teamSetDisplayName(sender, args);
         //if (args[1].equalsIgnoreCase("setbaselocation")) teamSetBaseLocation(sender, args);
-        if(args[1].equalsIgnoreCase("setflaglocation")) teamSetFlagLocation(sender, args);
+        if (args[1].equalsIgnoreCase("setflaglocation")) teamSetFlagLocation(sender, args);
         if (args[1].equalsIgnoreCase("setcolor")) teamSetColor(sender, args);
 
     }
@@ -141,26 +146,27 @@ public class CTFCommand implements CommandExecutor {
 
         if (Main.getInstance().getConfig().contains("Kits." + kitName)) {
 
-            List<String> kits = new ArrayList<>();
-            Game game = new Game();
-
-            if (Main.getInstance().getConfig().contains("Teams." + teamName + ".Kits")) {
-
-                for (String s : Main.getInstance().getConfig().getStringList("Teams." + teamName + ".Kits")) {
-
-                    if (game.getKitByName(s) != null) {
-                        kits.add(s);
-                    }
-
-                }
-
-            }
-
-            if (game.getKitByName(kitName) != null) {
-                kits.add(kitName);
-            } else {
-                sender.sendMessage(ChatColor.RED + "The kit " + ChatColor.AQUA + kitName + ChatColor.RED + " does not exist.");
-            }
+            List<String> kits = Main.getInstance().getConfig().getStringList("Teams." + teamName + ".Kits");
+            kits.add(kitName);
+//            Game game = new Game();
+//
+//            if (Main.getInstance().getConfig().contains("Teams." + teamName + ".Kits")) {
+//
+//                for (String s : Main.getInstance().getConfig().getStringList("Teams." + teamName + ".Kits")) {
+//
+//                    if (game.getKitByName(s) != null) {
+//                        kits.add(s);
+//                    }
+//
+//                }
+//
+//            }
+//
+//            if (game.getKitByName(kitName) != null) {
+//                kits.add(kitName);
+//            } else {
+//                sender.sendMessage(ChatColor.RED + "The kit " + ChatColor.AQUA + kitName + ChatColor.RED + " does not exist.");
+//            }
 
             Main.getInstance().getConfig().set("Teams." + teamName + ".Kits", kits);
             Main.getInstance().saveConfig();
@@ -247,7 +253,7 @@ public class CTFCommand implements CommandExecutor {
 
     }
 
-    private void teamSetFlagLocation(CommandSender sender, String[] args){
+    private void teamSetFlagLocation(CommandSender sender, String[] args) {
 
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.RED + "This command can only be performed by a player.");
@@ -296,6 +302,7 @@ public class CTFCommand implements CommandExecutor {
         if (args[1].equalsIgnoreCase("create")) kitCreate(sender, args);
         if (args[1].equalsIgnoreCase("delete")) kitDelete(sender, args);
         if (args[1].equalsIgnoreCase("seticon")) kitSetIcon(sender, args);
+        if (args[1].equalsIgnoreCase("addpotioneffect")) kitAddPotionEffect(sender, args);
 
     }
 
@@ -350,24 +357,38 @@ public class CTFCommand implements CommandExecutor {
         }
     }
 
-    private void SetFlagLocation(CommandSender sender, String[] args) {
+    private void kitAddPotionEffect(CommandSender sender, String[] args) {
+
+        String amplifier = String.valueOf(Integer.parseInt(args[4]) - 1);
+        String kit = args[2];
+        String type = args[3];
+
+        List<String> effects = new ArrayList<>();
+        if (Main.getInstance().getConfig().getStringList("Kits." + kit + ".PotionEffects") != null) {
+            effects = Main.getInstance().getConfig().getStringList("Kits." + kit + ".PotionEffects");
+        }
+
+        String effect = kit + "|" + type + "|" + amplifier + "|";
+        effects.add(effect);
+
+        Main.getInstance().getConfig().set("Kits." + kit + ".PotionEffects", effects);
+        Main.getInstance().saveConfig();
+        sender.sendMessage(ChatColor.GREEN + "Added a potion effect " + ChatColor.AQUA + effect + ChatColor.GREEN + ".");
+
+    }
+
+    private void SetFlagDepositLocation(CommandSender sender, String[] args) {
 
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.RED + "This command can only be performed by a player.");
             return;
         }
 
-        Location location = ((Player) sender).getLocation();
+        String location = Methods.WriteLocationToString(((Player) sender).getLocation());
 
-        if (location.getY() % 1 == 0) location.setY(location.getY() - 1);
-
-        Block block = Bukkit.getWorld(location.getWorld().getName()).getBlockAt(location);
-
-        String blockString = Methods.WriteBlockToString(block);
-
-        Main.getInstance().getConfig().set("Flag", blockString);
+        Main.getInstance().getConfig().set("FlagDepositLocation", location);
         Main.getInstance().saveConfig();
-        sender.sendMessage(ChatColor.GREEN + "Flag saved! " + ChatColor.AQUA + blockString.replace("|", " "));
+        sender.sendMessage(ChatColor.GREEN + "Flag deposit location saved! ");
 
     }
 
@@ -411,5 +432,38 @@ public class CTFCommand implements CommandExecutor {
 
     }
 
+    private void SetFinalRespawnPoint(CommandSender sender, String[] args) {
 
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.RED + "This command can only be performed by a player.");
+            return;
+        }
+
+        String location = Methods.WriteLocationToString(((Player) sender).getLocation());
+
+        Main.getInstance().getConfig().set("FinalRespawnPoint", location);
+        Main.getInstance().saveConfig();
+        sender.sendMessage(ChatColor.GREEN + "Final respawn location saved! ");
+
+    }
+
+    private void SetDeathTimer(CommandSender sender, String[] args) {
+
+        Integer seconds = Integer.parseInt(args[1]);
+
+        Main.getInstance().getConfig().set("DeathTimer", seconds);
+        Main.getInstance().saveConfig();
+        sender.sendMessage(ChatColor.GREEN + "Death timer set to " + ChatColor.AQUA + seconds + ChatColor.GREEN + ".");
+
+    }
+
+    private void SetWinnerPermission(CommandSender sender, String[] args) {
+
+        String permission = args[1];
+
+        Main.getInstance().getConfig().set("WinnerPermission", permission);
+        Main.getInstance().saveConfig();
+        sender.sendMessage(ChatColor.GREEN + "Winner permission set to " + ChatColor.AQUA + permission + ChatColor.GREEN + ".");
+
+    }
 }

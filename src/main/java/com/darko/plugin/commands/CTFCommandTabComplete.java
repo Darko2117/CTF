@@ -5,6 +5,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.potion.PotionEffectType;
 
 import java.util.*;
 
@@ -15,85 +16,94 @@ public class CTFCommandTabComplete implements TabCompleter {
         if (sender.hasPermission("ctf.admin")) {
             if (args.length == 1) {
 
-                List<String> completions = new ArrayList<>();
-                for (String s : getCTFCommands()) {
-                    if (s.startsWith(args[0])) {
-                        completions.add(s);
-                    }
-                }
-                return completions;
+                return getStartsWithList(getCTFCommands(), args[0]);
 
             } else if (args.length == 2 && args[0].equalsIgnoreCase("kit")) {
 
-                List<String> completions = new ArrayList<>();
-                for (String s : getKitCommands()) {
-                    if (s.startsWith(args[1])) {
-                        completions.add(s);
-                    }
-                }
-                return completions;
+                return getStartsWithList(getKitCommands(), args[1]);
 
             } else if (args.length == 2 && args[0].equalsIgnoreCase("team")) {
 
-                List<String> completions = new ArrayList<>();
-                for (String s : getTeamCommands()) {
-                    if (s.startsWith(args[1])) {
-                        completions.add(s);
-                    }
-                }
-                return completions;
+                return getStartsWithList(getTeamCommands(), args[1]);
 
             } else if (args.length == 3 && args[0].equalsIgnoreCase("kit") && args[1].equalsIgnoreCase("delete")) {
 
-                return getKitNames();
+                return getStartsWithList(getKitNames(), args[2]);
 
             } else if (args.length == 3 && args[0].equalsIgnoreCase("kit") && args[1].equalsIgnoreCase("seticon")) {
 
-                return getKitNames();
+                return getStartsWithList(getKitNames(), args[2]);
 
             } else if (args.length == 3 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("delete")) {
 
-                return getTeamNames();
+                return getStartsWithList(getTeamCommands(), args[2]);
 
             } else if (args.length == 3 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("addkit")) {
 
-                return getTeamNames();
+                return getStartsWithList(getTeamCommands(), args[2]);
 
             } else if (args.length == 4 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("addkit")) {
 
-                return getKitNames();
+                return getStartsWithList(getKitNames(), args[3]);
 
             } else if (args.length == 3 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("removekit")) {
 
-                return getTeamNames();
+                return getStartsWithList(getTeamCommands(), args[2]);
 
             } else if (args.length == 4 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("removekit")) {
 
-                return getKitNames();
+                return getStartsWithList(getKitNames(), args[3]);
 
             } else if (args.length == 3 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("addspawnlocation")) {
 
-                return getTeamNames();
+                return getStartsWithList(getTeamCommands(), args[2]);
+
             } else if (args.length == 2 && args[0].equalsIgnoreCase("setdefaultkit")) {
 
-                return getKitNames();
+                return getStartsWithList(getKitNames(), args[1]);
+
             } else if (args.length == 3 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("setdisplayname")) {
 
-                return getTeamNames();
-                //} else if (args.length == 3 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("setbaselocation")) {
+                return getStartsWithList(getTeamCommands(), args[2]);
 
-                //return getTeamNames();
             } else if (args.length == 3 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("setcolor")) {
 
-                return getTeamNames();
+                return getStartsWithList(getTeamCommands(), args[2]);
+
             } else if (args.length == 3 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("setflaglocation")) {
 
-                return getTeamNames();
+                return getStartsWithList(getTeamCommands(), args[2]);
+
+            } else if (args.length == 3 && args[0].equalsIgnoreCase("kit") && args[1].equalsIgnoreCase("addpotioneffect")) {
+
+                return getStartsWithList(getKitNames(), args[2]);
+
+            } else if (args.length == 4 && args[0].equalsIgnoreCase("kit") && args[1].equalsIgnoreCase("addpotioneffect")) {
+
+                List<String> effects = new ArrayList<>();
+
+                for (PotionEffectType p : PotionEffectType.values()) {
+                    effects.add(p.getName());
+                }
+
+                return getStartsWithList(effects, args[3]);
+
             }
         }
         return null;
     }
 
+    public static List<String> getStartsWithList(List<String> list, String startsWith){
+
+        List<String> completions = new ArrayList<>();
+        for(String s : list){
+            if(s.toLowerCase().startsWith(startsWith.toLowerCase())){
+                completions.add(s);
+            }
+        }
+        return completions;
+
+    }
 
     public static List<String> getCTFCommands() {
 
@@ -106,13 +116,17 @@ public class CTFCommandTabComplete implements TabCompleter {
         commands.add("kit");
         commands.add("team");
         commands.add("setdefaultkit");
-        commands.add("setflaglocation");
+        commands.add("setflagdepositlocation");
         commands.add("setflagradius");
         commands.add("setflagparticlecount");
         commands.add("setsecondsneededforcapture");
-        commands.add("setpointsneededtowin");
+        //commands.add("setpointsneededtowin");
+        commands.add("setfinalrespawnpoint");
+        commands.add("setdeathtimer");
+        commands.add("setwinnerpermission");
 
         return commands;
+
     }
 
     public static List<String> getKitCommands() {
@@ -122,6 +136,7 @@ public class CTFCommandTabComplete implements TabCompleter {
         commands.add("create");
         commands.add("delete");
         commands.add("seticon");
+        commands.add("addpotioneffect");
 
         return commands;
 
@@ -142,6 +157,7 @@ public class CTFCommandTabComplete implements TabCompleter {
         commands.add("setflaglocation");
 
         return commands;
+
     }
 
     public static List<String> getTeamNames() {
@@ -159,6 +175,7 @@ public class CTFCommandTabComplete implements TabCompleter {
         }
 
         return completions;
+
     }
 
     public static List<String> getKitNames() {
@@ -176,6 +193,7 @@ public class CTFCommandTabComplete implements TabCompleter {
         }
 
         return completions;
+
     }
 
     public static void invalidUsageMessageCTFCommands(CommandSender sender) {

@@ -1,10 +1,8 @@
 package com.darko.plugin;
 
 import com.darko.plugin.commands.CTFCommandTabComplete;
-import com.darko.plugin.gameclasses.Game;
-import com.darko.plugin.gameclasses.GameManager;
-import com.darko.plugin.gameclasses.Participant;
-import com.darko.plugin.gameclasses.Team;
+import com.darko.plugin.gameclasses.*;
+import com.darko.plugin.other.Serialization;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -12,37 +10,42 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.permissions.PermissionAttachmentInfo;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.util.*;
 
 public class Methods {
 
-    public static Inventory UI;
-
-    public static HashMap<ItemStack, String> iconsAndKits = new HashMap<>();
-
-    public static void RespawnFlagEliminated() {
+    public static void RespawnFlag(Team teamWhosFlagShouldBeRespawned) {
 
         Game game = GameManager.getActiveGame();
 
-        Block flag = GetBlockFromString(Main.getInstance().getConfig().getString("Flag"));
+        Team team = teamWhosFlagShouldBeRespawned;
 
-        Bukkit.getWorld(flag.getLocation().getWorld().getName()).getBlockAt(flag.getLocation()).setType(flag.getType());
-        Bukkit.getWorld(flag.getLocation().getWorld().getName()).getBlockAt(flag.getLocation()).setBlockData(flag.getBlockData());
-        Bukkit.getWorld(flag.getLocation().getWorld().getName()).strikeLightningEffect(flag.getLocation());
+        Block flagBlock = Methods.GetBlockFromString(Main.getInstance().getConfig().getString("Teams." + team.getName() + ".Flag"));
 
-        game.setFlagCarrier(null);
+//        Block flag = GetBlockFromString(Main.getInstance().getConfig().getString("Flag"));
+//
+        Bukkit.getWorld(flagBlock.getLocation().getWorld().getName()).getBlockAt(flagBlock.getLocation()).setType(flagBlock.getType());
+        Bukkit.getWorld(flagBlock.getLocation().getWorld().getName()).getBlockAt(flagBlock.getLocation()).setBlockData(flagBlock.getBlockData());
+        Bukkit.getWorld(flagBlock.getLocation().getWorld().getName()).strikeLightningEffect(flagBlock.getLocation());
+
+        game.getFlagFromTeam(team).setCarrier(null);
 
         for (Player p : Bukkit.getOnlinePlayers()) {
-
-            p.sendTitle(ChatColor.GOLD + "" + ChatColor.BOLD + "FLAG CARRIER ELIMINATED", "THE FLAG CAN BE CAPTURED AGAIN", 5, 40, 5);
-
+            p.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "Player carrying " + ChatColor.translateAlternateColorCodes('&', team.getDisplayName()) + ChatColor.GOLD + "" + ChatColor.BOLD + "'s flag was eliminated! That team's flag will respawn in their base!");
         }
+//
+//        game.setFlagCarrier(null);
+//
+//        for (Player p : Bukkit.getOnlinePlayers()) {
+//
+//            p.sendTitle(ChatColor.GOLD + "" + ChatColor.BOLD + "FLAG CARRIER ELIMINATED", "THE FLAG CAN BE CAPTURED AGAIN", 5, 40, 5);
+//
+//        }
     }
 
     public static void RespawnFlagReturned(Team team) {
@@ -70,43 +73,11 @@ public class Methods {
 
     public static void OpenKitSelectionUI(Participant participant) {
 
-        if (UI == null) {
-
-            Integer numberOfKits = CTFCommandTabComplete.getKitNames().size();
-            Integer numberOfSlotsInTheUI;
-
-            if (numberOfKits <= 9) numberOfSlotsInTheUI = 9;
-            else if (numberOfKits <= 18) numberOfSlotsInTheUI = 18;
-            else if (numberOfKits <= 27) numberOfSlotsInTheUI = 27;
-            else if (numberOfKits <= 36) numberOfSlotsInTheUI = 36;
-            else if (numberOfKits <= 45) numberOfSlotsInTheUI = 45;
-            else numberOfSlotsInTheUI = 54;
-
-            UI = Bukkit.createInventory(null, numberOfSlotsInTheUI, "" + ChatColor.BLACK + ChatColor.BOLD + "Choose a class");
-
-            List<String> lore = new ArrayList<>();
-            lore.add(ChatColor.ITALIC + "Left click to select the kit");
-            lore.add(ChatColor.ITALIC + "Right click to see the items and the abilities");
-
-            for (String kitName : CTFCommandTabComplete.getKitNames()) {
-                ItemStack tempItem = Main.getInstance().getConfig().getItemStack("Kits." + kitName + ".Icon");
-                tempItem.setLore(lore);
-                iconsAndKits.put(tempItem, kitName);
-            }
-
-            Integer i = 0;
-            for(Map.Entry<ItemStack, String> entry : iconsAndKits.entrySet()){
-                UI.setItem(i, entry.getKey());
-                i++;
-            }
-
-        }
-
-        participant.getPlayer().openInventory(UI);
+        participant.getPlayer().openInventory(participant.getTeam().getKitSelectInventory());
 
     }
 
-    public static String WriteLocationToString(Location location){
+    public static String WriteLocationToString(Location location) {
 
         String world = location.getWorld().getName();
         String X = String.valueOf(location.getX());
@@ -119,7 +90,7 @@ public class Methods {
 
     }
 
-    public static Location GetLocationFromString(String string){
+    public static Location GetLocationFromString(String string) {
 
         StringBuilder string1 = new StringBuilder(string);
 
@@ -198,4 +169,77 @@ public class Methods {
 
         return block;
     }
+
+    public static void TeleportParticipantToOneOfTheSpawnLocations(Participant p) {
+
+        List<Location> locations = p.getTeam().getSpawnLocations();
+        Random r = new Random();
+        Location teleportSpot = locations.get(r.nextInt(locations.size()));
+        p.getPlayer().teleport(teleportSpot);
+
+    }
+
+    public static void GivePlayerKitInventory(Player player, Kit kit) {
+
+        PlayerInventory inventory = player.getInventory();
+
+        ItemStack[] contents = new ItemStack[41];
+        try {
+            contents = Serialization.itemStackArrayFromBase64(kit.getInventory());
+        } catch (IOException e) {
+            System.out.println(e);
+        }
+        inventory.setContents(contents);
+
+        player.updateInventory();
+    }
+
+    public static void LoadKitForParticipant(Participant p) {
+
+        Boolean kitFound = false;
+
+        for (PermissionAttachmentInfo pe : p.getPlayer().getEffectivePermissions()) {
+
+            if (pe.getPermission().contains("ctf.kit.")) {
+
+                kitFound = true;
+
+                String kitString = pe.getPermission().substring(8);
+
+                for (String s : CTFCommandTabComplete.getKitNames()) {
+
+                    if (s.equalsIgnoreCase(kitString)) {
+
+                        Kit kit = GameManager.getActiveGame().getKitByName(kitString);
+
+                        GivePlayerKitInventory(p.getPlayer(), kit);
+                        p.setKit(kit);
+
+                    }
+                }
+            }
+        }
+
+        if (!kitFound) {
+
+            String defaultKit = Main.getInstance().getConfig().getString("DefaultKit");
+
+            for (String s : CTFCommandTabComplete.getKitNames()) {
+
+                if (s.equalsIgnoreCase(defaultKit)) {
+
+                    Kit kit = GameManager.getActiveGame().getKitByName(defaultKit);
+
+                    GivePlayerKitInventory(p.getPlayer(), kit);
+                    p.setKit(kit);
+
+                }
+            }
+
+            Main.getInstance().getLogger().info(p.getPlayer().getName() + " doesn't have a kit permission set. They got the default kit: " + defaultKit);
+
+        }
+
+    }
+
 }

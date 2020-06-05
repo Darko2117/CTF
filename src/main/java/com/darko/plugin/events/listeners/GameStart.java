@@ -3,7 +3,6 @@ package com.darko.plugin.events.listeners;
 import com.darko.plugin.Main;
 import com.darko.plugin.Methods;
 import com.darko.plugin.events.events.GameStartEvent;
-import com.darko.plugin.other.Serialization;
 import com.darko.plugin.commands.CTFCommandTabComplete;
 import com.darko.plugin.gameclasses.*;
 import org.bukkit.Bukkit;
@@ -13,16 +12,15 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.permissions.PermissionAttachmentInfo;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scoreboard.Score;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class GameStart implements Listener {
 
@@ -35,23 +33,23 @@ public class GameStart implements Listener {
 
         LoadTeams();
 
-        LoadFlag();
+        LoadFlags();
 
         SendTimedTitle(60, 0);
-//        SendTimedTitle(30, 30);
-//        SendTimedTitle(10, 50);
-//        SendTimedTitle(5, 55);
-//        SendTimedTitle(4, 56);
-//        SendTimedTitle(3, 57);
-//        SendTimedTitle(2, 58);
-//        SendTimedTitle(1, 59);
+        SendTimedTitle(30, 30);
+        SendTimedTitle(10, 50);
+        SendTimedTitle(5, 55);
+        SendTimedTitle(4, 56);
+        SendTimedTitle(3, 57);
+        SendTimedTitle(2, 58);
+        SendTimedTitle(1, 59);
 
         new BukkitRunnable() {
             @Override
             public void run() {
                 StartGame();
             }
-        }.runTaskLater(Main.getInstance(), 1 * 20);
+        }.runTaskLater(Main.getInstance(), 60 * 20);
 
         e.getStarter().sendMessage(ChatColor.GREEN + "Event started!");
 
@@ -70,21 +68,60 @@ public class GameStart implements Listener {
         Game game = GameManager.getActiveGame();
 
         for (String s : CTFCommandTabComplete.getKitNames()) {
-            game.addAvailableKit(game.getKitByName(s));
+
+            Kit kit = new Kit();
+
+            kit.setName(s);
+
+            String inventory = Main.getInstance().getConfig().getString("Kits." + s + ".Inventory");
+            kit.setInventory(inventory);
+
+            List<String> availableAbilities = Main.getInstance().getConfig().getStringList("Kits." + s + ".AvailableAbilities");
+            kit.setAvailableAbilities(availableAbilities);
+
+            ItemStack icon = null;
+            if (Main.getInstance().getConfig().getItemStack("Kits." + s + ".Icon") != null) {
+                icon = Main.getInstance().getConfig().getItemStack("Kits." + s + ".Icon");
+            }
+            kit.setIcon(icon);
+
+            List<String> potionEffectsString = Main.getInstance().getConfig().getStringList("Kits." + s + ".PotionEffects");
+
+            for(String pot : potionEffectsString){
+
+                StringBuilder reading = new StringBuilder(pot);
+
+                String kitName = reading.substring(0, reading.indexOf("|"));
+                reading.delete(0, reading.indexOf("|") + 1);
+
+                PotionEffectType type = PotionEffectType.getByName(reading.substring(0, reading.indexOf("|")));
+                reading.delete(0, reading.indexOf("|") + 1);
+
+                Integer amplifier = Integer.valueOf(reading.substring(0, reading.indexOf("|")));
+                reading.delete(0, reading.indexOf("|") + 1);
+
+                PotionEffect effect = new PotionEffect(type, 20, amplifier);
+
+                kit.addPotionEffect(effect);
+
+            }
+            game.addAvailableKit(kit);
         }
 
     }
 
     private void LoadTeams() {
 
+        Game game = GameManager.getActiveGame();
+
         for (String s : CTFCommandTabComplete.getTeamNames()) {
 
             Team team = new Team();
 
             team.setName(s);
+            team.setCanRespawn(true);
 
             if (Main.getInstance().getConfig().contains("Teams." + s + ".SpawnLocations")) {
-
 //                List<Location> locations = new ArrayList<>();
 //
 //                try {
@@ -92,41 +129,46 @@ public class GameStart implements Listener {
 //                        team.addSpawnLocation(l);
 //                    }
 //                }catch (IllegalArgumentException e){System.out.println("It fucked up");}
-
                 List<String> locationsString = Main.getInstance().getConfig().getStringList("Teams." + s + ".SpawnLocations");
 
                 for(String s1 : locationsString){
                     team.addSpawnLocation(Methods.GetLocationFromString(s1));
                 }
-
-
             }
 
             if (Main.getInstance().getConfig().contains("Teams." + s + ".Kits")) {
-
-                List<Kit> availableKits = new ArrayList<>();
-
-                for (String s1 : Main.getInstance().getConfig().getStringList("Teams." + s + ".Kits")) {
-
-                    Kit kit = new Kit();
-
-                    kit.setName(s1);
-
-                    String inventory = Main.getInstance().getConfig().getString("Kits." + s1 + ".Inventory");
-                    kit.setInventory(inventory);
-
-                    List<String> availableAbilities = Main.getInstance().getConfig().getStringList("Kits." + s1 + ".AvailableAbilities");
-                    kit.setAvailableAbilities(availableAbilities);
-
-                    ItemStack icon = null;
-                    if (Main.getInstance().getConfig().getItemStack("Kits." + s1 + ".Icon") != null) {
-                        icon = Main.getInstance().getConfig().getItemStack("Kits." + s1 + ".Icon");
+                for(Kit k : game.getKits()){
+                    if(Main.getInstance().getConfig().getStringList("Teams." + s + ".Kits").contains(k.getName())){
+                        team.addAvailableKits(k);
                     }
-                    kit.setIcon(icon);
-                    availableKits.add(kit);
-
                 }
-                team.setAvailableKits(availableKits);
+
+                Integer numberOfKits = team.getAvailableKits().size();
+                Integer numberOfSlotsInTheUI;
+
+                if (numberOfKits <= 9) numberOfSlotsInTheUI = 9;
+                else if (numberOfKits <= 18) numberOfSlotsInTheUI = 18;
+                else if (numberOfKits <= 27) numberOfSlotsInTheUI = 27;
+                else if (numberOfKits <= 36) numberOfSlotsInTheUI = 36;
+                else if (numberOfKits <= 45) numberOfSlotsInTheUI = 45;
+                else numberOfSlotsInTheUI = 54;
+
+                Inventory UI = Bukkit.createInventory(null, numberOfSlotsInTheUI, "" + ChatColor.BLACK + ChatColor.BOLD + "Choose a class");
+
+                List<String> lore = new ArrayList<>();
+                lore.add(ChatColor.ITALIC + "Left click to select the kit");
+
+                Integer i = 0;
+                for(Kit k : team.getAvailableKits()){
+                    ItemStack icon = k.getIcon();
+                    icon.setLore(lore);
+                    UI.setItem(i, icon);
+                    i++;
+                    System.out.println(icon.getType().toString());
+                }
+
+                team.setKitSelectInventory(UI);
+
             }
 
             if (Main.getInstance().getConfig().contains("Teams." + s + ".DisplayName")) {
@@ -151,54 +193,56 @@ public class GameStart implements Listener {
 
         for (Player p : Bukkit.getOnlinePlayers()) {
 
-            Boolean teamFound = false;
+            if (!p.hasPermission("ctf.bypass") || p.isOp()) {
 
-            for (PermissionAttachmentInfo pe : p.getEffectivePermissions()) {
+                Boolean teamFound = false;
 
-                if (pe.getPermission().contains("ctf.team.")) {
+                for (PermissionAttachmentInfo pe : p.getEffectivePermissions()) {
 
-                    teamFound = true;
+                    if (pe.getPermission().contains("ctf.team.")) {
 
-                    String teamString = pe.getPermission().substring(9);
+                        teamFound = true;
+
+                        String teamString = pe.getPermission().substring(9);
+
+                        for (Team t : GameManager.getActiveGame().getTeams()) {
+
+                            if (teamString.equalsIgnoreCase(t.getName())) {
+
+                                Participant participant = new Participant();
+                                participant.setPlayer(p);
+                                participant.setTeam(t);
+                                t.addTeamMember(participant);
+
+                            }
+
+                        }
+                    }
+
+                }
+
+                if (!teamFound) {
+
+                    Team leastPlayersTeam = null;
 
                     for (Team t : GameManager.getActiveGame().getTeams()) {
 
-                        if (teamString.equalsIgnoreCase(t.getName())) {
-
-                            Participant participant = new Participant();
-                            participant.setPlayer(p);
-                            participant.setTeam(t);
-                            t.addTeamMember(participant);
-
-                        }
+                        if (leastPlayersTeam == null) leastPlayersTeam = t;
+                        if (t.getTeamMembers().size() < leastPlayersTeam.getTeamMembers().size()) leastPlayersTeam = t;
 
                     }
-                }
 
-            }
+                    Participant participant = new Participant();
+                    participant.setPlayer(p);
+                    participant.setTeam(leastPlayersTeam);
+                    leastPlayersTeam.addTeamMember(participant);
 
-            if (!teamFound) {
-
-                Team leastPlayersTeam = null;
-
-                for (Team t : GameManager.getActiveGame().getTeams()) {
-
-                    if (leastPlayersTeam == null) leastPlayersTeam = t;
-                    if (t.getTeamMembers().size() < leastPlayersTeam.getTeamMembers().size()) leastPlayersTeam = t;
+                    Main.getInstance().getLogger().info(p.getName() + " doesn't have a team permission set. They were put in " + leastPlayersTeam.getName());
 
                 }
 
-                Participant participant = new Participant();
-                participant.setPlayer(p);
-                participant.setTeam(leastPlayersTeam);
-                leastPlayersTeam.addTeamMember(participant);
-
-                Main.getInstance().getLogger().info(p.getName() + " doesn't have a team permission set. They were put in " + leastPlayersTeam.getName());
-
             }
-
         }
-
         for (Team t : GameManager.getActiveGame().getTeams()) {
 
             org.bukkit.scoreboard.Team t1 = Bukkit.getServer().getScoreboardManager().getMainScoreboard().getTeam(t.getName());
@@ -214,14 +258,26 @@ public class GameStart implements Listener {
         }
     }
 
-    private void LoadFlag() {
+    private void LoadFlags() {
 
         Game game = GameManager.getActiveGame();
 
-        Block flag = Methods.GetBlockFromString(Main.getInstance().getConfig().getString("Flag"));
-        game.setFlag(flag);
-        Bukkit.getWorld(flag.getLocation().getWorld().getName()).getBlockAt(flag.getLocation()).setType(flag.getType());
-        Bukkit.getWorld(flag.getLocation().getWorld().getName()).getBlockAt(flag.getLocation()).setBlockData(flag.getBlockData());
+//        Block flag = Methods.GetBlockFromString(Main.getInstance().getConfig().getString("Flag"));
+//        game.setFlag(flag);
+
+        for(Team t : game.getTeams()){
+
+            Flag flag = new Flag();
+
+            Block flagBlock = Methods.GetBlockFromString(Main.getInstance().getConfig().getString("Teams." + t.getName() + ".Flag"));
+
+            Bukkit.getWorld(flagBlock.getLocation().getWorld().getName()).getBlockAt(flagBlock.getLocation()).setType(flagBlock.getType());
+            Bukkit.getWorld(flagBlock.getLocation().getWorld().getName()).getBlockAt(flagBlock.getLocation()).setBlockData(flagBlock.getBlockData());
+
+            flag.setBlock(flagBlock);
+            flag.setTeam(t);
+            game.addFlag(flag);
+        }
 
         Integer radius = Main.getInstance().getConfig().getInt("FlagRadius");
         game.setFlagRadius(radius);
@@ -234,6 +290,18 @@ public class GameStart implements Listener {
 
         Integer points = Main.getInstance().getConfig().getInt("PointsNeededToWin");
         game.setPointsNeededToWin(points);
+
+        Location depositLocation = Methods.GetLocationFromString(Main.getInstance().getConfig().getString("FlagDepositLocation"));
+        game.setFlagDepositLocation(depositLocation);
+
+        Location finalRespawnLocation = Methods.GetLocationFromString(Main.getInstance().getConfig().getString("FinalRespawnPoint"));
+        game.setFinalRespawnLocation(finalRespawnLocation);
+
+        Integer deathTimer = Main.getInstance().getConfig().getInt("DeathTimer");
+        game.setDeathTimer(deathTimer);
+
+        String winnerPermission = Main.getInstance().getConfig().getString("WinnerPermission");
+        game.setWinnerPermission(winnerPermission);
 
     }
 
@@ -267,87 +335,12 @@ public class GameStart implements Listener {
 
     }
 
-    private void LoadKitForParticipant(Participant p) {
-
-        Boolean kitFound = false;
-
-        for (PermissionAttachmentInfo pe : p.getPlayer().getEffectivePermissions()) {
-
-            if (pe.getPermission().contains("ctf.kit.")) {
-
-                kitFound = true;
-
-                String kitString = pe.getPermission().substring(8);
-
-                for (String s : CTFCommandTabComplete.getKitNames()) {
-
-                    if (s.equalsIgnoreCase(kitString)) {
-
-                        Kit kit = GameManager.getActiveGame().getKitByName(kitString);
-
-                        GivePlayerKitInventory(p.getPlayer(), kit);
-                        p.setKit(kit);
-
-                    }
-                }
-            }
-        }
-
-        if (!kitFound) {
-
-            String defaultKit = Main.getInstance().getConfig().getString("DefaultKit");
-
-            for (String s : CTFCommandTabComplete.getKitNames()) {
-
-                if (s.equalsIgnoreCase(defaultKit)) {
-
-                    Kit kit = GameManager.getActiveGame().getKitByName(defaultKit);
-
-                    GivePlayerKitInventory(p.getPlayer(), kit);
-                    p.setKit(kit);
-
-                }
-            }
-
-            Main.getInstance().getLogger().info(p.getPlayer().getName() + " doesn't have a kit permission set. They got the default kit: " + defaultKit);
-
-        }
-
-    }
-
-    public static void TeleportParticipant(Participant p) {
-
-        List<Location> locations = p.getTeam().getSpawnLocations();
-        Random r = new Random();
-        Location teleportSpot = locations.get(r.nextInt(locations.size()));
-        p.getPlayer().teleport(teleportSpot);
-
-    }
-
     private void StartGame() {
         for (Participant p : GameManager.getActiveGame().getParticipants()) {
-            LoadKitForParticipant(p);
-            TeleportParticipant(p);
+            Methods.TeleportParticipantToOneOfTheSpawnLocations(p);
             Methods.OpenKitSelectionUI(p);
         }
     }
-
-
-    public static void GivePlayerKitInventory(Player player, Kit kit) {
-
-        PlayerInventory inventory = player.getInventory();
-
-        ItemStack[] contents = new ItemStack[41];
-        try {
-            contents = Serialization.itemStackArrayFromBase64(kit.getInventory());
-        } catch (IOException e) {
-            System.out.println(e);
-        }
-        inventory.setContents(contents);
-
-        player.updateInventory();
-    }
-
 
 
 }

@@ -1,13 +1,11 @@
 package com.darko.plugin.events.listeners;
 
 import com.darko.plugin.events.events.FlagCapturedEvent;
-import com.darko.plugin.gameclasses.Game;
-import com.darko.plugin.gameclasses.GameManager;
-import com.darko.plugin.gameclasses.Participant;
+import com.darko.plugin.gameclasses.*;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -15,19 +13,18 @@ import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 
 
-public class FlagCapture implements Listener {
+public class FlagCaptured implements Listener {
 
     @EventHandler
     public void onFlagCapture(FlagCapturedEvent e) {
 
         Game game = GameManager.getActiveGame();
-        Location flagLocation = game.getFlag().getLocation();
-
-        Participant carrier = e.getCarrier();
-        game.setFlagCarrier(carrier);
-
-        Block flag = game.getFlag();
-        ItemStack flagItem = new ItemStack(flag.getType());
+        Team teamWhoCaptured = e.getTeamWhoCapturedTheFlag();
+        Team teamWhosFlagHasBeenCaptured = e.getTeamWhosFlagHasBeenCaptured();
+        Flag flag = game.getFlagFromTeam(teamWhosFlagHasBeenCaptured);
+        Participant carrier = flag.getCarrier();
+        ItemStack flagItem = new ItemStack(flag.getBlock().getType());
+        Location flagLocation = flag.getBlock().getLocation();
 
         Bukkit.getWorld(flagLocation.getWorld().getName()).getBlockAt(flagLocation).setType(Material.AIR);
 
@@ -40,8 +37,10 @@ public class FlagCapture implements Listener {
 
         carrier.getPlayer().getInventory().setHelmet(flagItem);
 
-        System.out.println(carrier.getPlayer().getName() + " captured the flag!");
-
+        System.out.println(teamWhoCaptured.getName() + "(" + carrier.getPlayer().getName() + ") captured " + teamWhosFlagHasBeenCaptured.getName() + "'s flag!");
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            p.sendTitle(ChatColor.translateAlternateColorCodes('&', teamWhoCaptured.getDisplayName() + ChatColor.GOLD + " captured " + teamWhosFlagHasBeenCaptured.getDisplayName() + ChatColor.GOLD + "'s flag!"), "", 5, 40, 5);
+        }
 
     }
 

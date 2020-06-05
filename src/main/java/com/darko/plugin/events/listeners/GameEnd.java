@@ -3,6 +3,7 @@ package com.darko.plugin.events.listeners;
 import com.darko.plugin.events.events.GameEndEvent;
 import com.darko.plugin.gameclasses.Game;
 import com.darko.plugin.gameclasses.GameManager;
+import com.darko.plugin.gameclasses.Participant;
 import com.darko.plugin.gameclasses.Team;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -17,23 +18,17 @@ public class GameEnd implements Listener {
 
         Game game = e.getGame();
 
-        Integer mostPoints = null;
-        Team winningTeam = null;
-        for (Team t : game.getTeams()) {
-            if (mostPoints == null) {
-                mostPoints = t.getPoints();
-                winningTeam = t;
-            } else {
-                if (t.getPoints() > mostPoints) winningTeam = t;
-            }
-        }
+        Team winningTeam = game.getTeams().get(0);
 
         for (Player p : Bukkit.getOnlinePlayers()) {
-            p.sendTitle(ChatColor.translateAlternateColorCodes('&', winningTeam.getDisplayName()) + ChatColor.GOLD + ChatColor.BOLD + " WON!!!", "THEY WERE THE FIRST TO CAPTURE THE FLAG " + game.getPointsNeededToWin() + " TIMES!!!", 10, 200, 60);
+            p.sendTitle(ChatColor.translateAlternateColorCodes('&', winningTeam.getDisplayName()) + ChatColor.GOLD + "" + ChatColor.BOLD + " WON!!!", "They are the last team standing!", 5, 200, 40);
         }
 
         GameManager.setActiveGame(null);
 
+        for (Participant p : game.getParticipants()) {
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "lp user " + p.getPlayer().getName() + " permission set " + game.getWinnerPermission());
+        }
 
     }
 

@@ -1,6 +1,7 @@
 package com.darko.plugin.gameclasses;
 
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,8 @@ public class Kit {
     ItemStack icon;
 
     List<String> availableAbilities = new ArrayList<>();
+
+    List<PotionEffect> potionEffects = new ArrayList<>();
 
 
     public String getInventory() {
@@ -50,5 +53,16 @@ public class Kit {
     public void setAvailableAbilities(List<String> abilities){
         this.availableAbilities = abilities;
     }
+
+
+    public List<PotionEffect> getPotionEffects() {
+        return potionEffects;
+    }
+
+    public void setPotionEffects(List<PotionEffect> potionEffects) {
+        this.potionEffects = potionEffects;
+    }
+
+    public void addPotionEffect(PotionEffect potionEffect){this.potionEffects.add(potionEffect);}
 
 }

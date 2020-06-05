@@ -3,6 +3,7 @@ package com.darko.plugin.gameclasses;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.inventory.Inventory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,10 @@ public class Team {
     ChatColor color;
 
     Block flag;
+
+    Boolean canRespawn;
+
+    Inventory kitSelectInventory;
 
 
     public List<Participant> getTeamMembers() {
@@ -126,5 +131,23 @@ public class Team {
 
     public void setFlag(Block flag) {
         this.flag = flag;
+    }
+
+
+    public Boolean getCanRespawn() {
+        return canRespawn;
+    }
+
+    public void setCanRespawn(Boolean canRespawn) {
+        this.canRespawn = canRespawn;
+    }
+
+
+    public Inventory getKitSelectInventory() {
+        return kitSelectInventory;
+    }
+
+    public void setKitSelectInventory(Inventory kitSelectInventory) {
+        this.kitSelectInventory = kitSelectInventory;
     }
 }
