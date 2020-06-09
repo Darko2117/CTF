@@ -164,7 +164,6 @@ public class GameStart implements Listener {
                     icon.setLore(lore);
                     UI.setItem(i, icon);
                     i++;
-                    System.out.println(icon.getType().toString());
                 }
 
                 team.setKitSelectInventory(UI);
@@ -243,6 +242,7 @@ public class GameStart implements Listener {
 
             }
         }
+
         for (Team t : GameManager.getActiveGame().getTeams()) {
 
             org.bukkit.scoreboard.Team t1 = Bukkit.getServer().getScoreboardManager().getMainScoreboard().getTeam(t.getName());
@@ -256,6 +256,7 @@ public class GameStart implements Listener {
             t1.setAllowFriendlyFire(false);
 
         }
+
     }
 
     private void LoadFlags() {

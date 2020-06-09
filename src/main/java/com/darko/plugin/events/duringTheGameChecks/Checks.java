@@ -29,7 +29,6 @@ public class Checks implements Listener {
             Game game = GameManager.getActiveGame();
             for (Participant p : game.getParticipants()) {
                 if (p.getPlayer().equals(e.getPlayer())) {
-                    Player player = e.getPlayer();
                     e.setCancelled(true);
                 }
             }
@@ -57,9 +56,6 @@ public class Checks implements Listener {
             for (Participant p : game.getParticipants()) {
                 if (p.getPlayer().equals(e.getEntity())) {
                     e.getDrops().clear();
-//                    if (game.getFlagCarrier() != null && game.getFlagCarrier().equals(p)) {
-//                        Methods.RespawnFlagEliminated();
-//                    }
                     for (Flag f : game.getFlags()) {
                         if (f.getCarrier() != null && f.getCarrier() == p) {
                             Methods.RespawnFlag(f.getTeam());
@@ -83,7 +79,6 @@ public class Checks implements Listener {
                         Methods.OpenKitSelectionUI(game.getParticipantFromPlayer(player));
                     }
                 }.runTaskLater(Main.getInstance(), 10);
-//                Methods.GivePlayerKitInventory(player, game.getParticipantFromPlayer(player).getKit());
                 player.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "You will be teleported back into action in " + game.getDeathTimer() + " seconds!");
                 new BukkitRunnable() {
                     @Override
@@ -110,9 +105,6 @@ public class Checks implements Listener {
             Game game = GameManager.getActiveGame();
             for (Participant p : game.getParticipants()) {
                 if (e.getPlayer().equals(p.getPlayer())) {
-//                    if (game.getFlagCarrier() != null && game.getFlagCarrier().equals(p)) {
-//                        Methods.RespawnFlagEliminated();
-//                    }
                     for (Flag f : game.getFlags()) {
                         if (f.getCarrier() != null && f.getCarrier() == p) {
                             Methods.RespawnFlag(f.getTeam());

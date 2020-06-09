@@ -36,11 +36,11 @@ public class CTFCommandTabComplete implements TabCompleter {
 
             } else if (args.length == 3 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("delete")) {
 
-                return getStartsWithList(getTeamCommands(), args[2]);
+                return getStartsWithList(getTeamNames(), args[2]);
 
             } else if (args.length == 3 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("addkit")) {
 
-                return getStartsWithList(getTeamCommands(), args[2]);
+                return getStartsWithList(getTeamNames(), args[2]);
 
             } else if (args.length == 4 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("addkit")) {
 
@@ -48,7 +48,7 @@ public class CTFCommandTabComplete implements TabCompleter {
 
             } else if (args.length == 3 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("removekit")) {
 
-                return getStartsWithList(getTeamCommands(), args[2]);
+                return getStartsWithList(getTeamNames(), args[2]);
 
             } else if (args.length == 4 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("removekit")) {
 
@@ -56,7 +56,7 @@ public class CTFCommandTabComplete implements TabCompleter {
 
             } else if (args.length == 3 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("addspawnlocation")) {
 
-                return getStartsWithList(getTeamCommands(), args[2]);
+                return getStartsWithList(getTeamNames(), args[2]);
 
             } else if (args.length == 2 && args[0].equalsIgnoreCase("setdefaultkit")) {
 
@@ -64,15 +64,15 @@ public class CTFCommandTabComplete implements TabCompleter {
 
             } else if (args.length == 3 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("setdisplayname")) {
 
-                return getStartsWithList(getTeamCommands(), args[2]);
+                return getStartsWithList(getTeamNames(), args[2]);
 
             } else if (args.length == 3 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("setcolor")) {
 
-                return getStartsWithList(getTeamCommands(), args[2]);
+                return getStartsWithList(getTeamNames(), args[2]);
 
             } else if (args.length == 3 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("setflaglocation")) {
 
-                return getStartsWithList(getTeamCommands(), args[2]);
+                return getStartsWithList(getTeamNames(), args[2]);
 
             } else if (args.length == 3 && args[0].equalsIgnoreCase("kit") && args[1].equalsIgnoreCase("addpotioneffect")) {
 

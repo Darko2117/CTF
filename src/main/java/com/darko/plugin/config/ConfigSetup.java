@@ -9,10 +9,6 @@ public class ConfigSetup {
 
         FileConfiguration config = Main.getInstance().getConfig();
 
-        if (!config.contains("DefaultKit")) {
-            config.set("DefaultKit", "Put a name of a kit here");
-        }
-
         Main.getInstance().saveConfig();
 
     }

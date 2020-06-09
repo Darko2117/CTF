@@ -14,7 +14,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class CTFCommand implements CommandExecutor {
@@ -43,7 +42,7 @@ public class CTFCommand implements CommandExecutor {
         if (args[0].equalsIgnoreCase("configreload")) ConfigReload(sender);
         if (args[0].equalsIgnoreCase("kit")) Kit(sender, args);
         if (args[0].equalsIgnoreCase("team")) Team(sender, args);
-        if (args[0].equalsIgnoreCase("setdefaultkit")) SetDefaultKit(sender, args);
+        //if (args[0].equalsIgnoreCase("setdefaultkit")) SetDefaultKit(sender, args);
         if (args[0].equalsIgnoreCase("setflagdepositlocation")) SetFlagDepositLocation(sender, args);
         if (args[0].equalsIgnoreCase("setflagradius")) SetFlagRadius(sender, args);
         if (args[0].equalsIgnoreCase("setflagparticlecount")) SetFlagParticleCount(sender, args);
@@ -60,16 +59,6 @@ public class CTFCommand implements CommandExecutor {
 
         GameStartEvent event = new GameStartEvent(sender);
         Bukkit.getPluginManager().callEvent(event);
-
-    }
-
-    private void SetDefaultKit(CommandSender sender, String[] args) {
-
-        String kitName = args[1];
-
-        Main.getInstance().getConfig().set("DefaultKit", kitName);
-        Main.getInstance().saveConfig();
-        sender.sendMessage(ChatColor.GREEN + "Kit " + ChatColor.AQUA + kitName + ChatColor.GREEN + " set as the default kit.");
 
     }
 
@@ -134,7 +123,9 @@ public class CTFCommand implements CommandExecutor {
             sender.sendMessage(ChatColor.GREEN + "Team " + ChatColor.AQUA + teamName + ChatColor.GREEN + " deleted.");
 
         } else {
+
             sender.sendMessage(ChatColor.RED + "Team " + ChatColor.AQUA + teamName + ChatColor.RED + " does not exist.");
+
         }
 
     }
@@ -144,35 +135,12 @@ public class CTFCommand implements CommandExecutor {
         String teamName = args[2];
         String kitName = args[3];
 
-        if (Main.getInstance().getConfig().contains("Kits." + kitName)) {
+        List<String> kits = Main.getInstance().getConfig().getStringList("Teams." + teamName + ".Kits");
+        kits.add(kitName);
+        Main.getInstance().getConfig().set("Teams." + teamName + ".Kits", kits);
+        Main.getInstance().saveConfig();
+        sender.sendMessage(ChatColor.GREEN + "Kit " + ChatColor.AQUA + kitName + ChatColor.GREEN + " added to the team " + ChatColor.AQUA + teamName + ChatColor.GREEN + ". Kits available for that team are: " + ChatColor.AQUA + kits);
 
-            List<String> kits = Main.getInstance().getConfig().getStringList("Teams." + teamName + ".Kits");
-            kits.add(kitName);
-//            Game game = new Game();
-//
-//            if (Main.getInstance().getConfig().contains("Teams." + teamName + ".Kits")) {
-//
-//                for (String s : Main.getInstance().getConfig().getStringList("Teams." + teamName + ".Kits")) {
-//
-//                    if (game.getKitByName(s) != null) {
-//                        kits.add(s);
-//                    }
-//
-//                }
-//
-//            }
-//
-//            if (game.getKitByName(kitName) != null) {
-//                kits.add(kitName);
-//            } else {
-//                sender.sendMessage(ChatColor.RED + "The kit " + ChatColor.AQUA + kitName + ChatColor.RED + " does not exist.");
-//            }
-
-            Main.getInstance().getConfig().set("Teams." + teamName + ".Kits", kits);
-            Main.getInstance().saveConfig();
-            sender.sendMessage(ChatColor.GREEN + "Kit " + ChatColor.AQUA + kitName + ChatColor.GREEN + " added to the team " + ChatColor.AQUA + teamName + ChatColor.GREEN + ". Kits available for that team are: " + ChatColor.AQUA + kits);
-
-        }
     }
 
     private void teamRemoveKit(CommandSender sender, String[] args) {
@@ -180,15 +148,12 @@ public class CTFCommand implements CommandExecutor {
         String teamName = args[2];
         String kitName = args[3];
 
-        if (Main.getInstance().getConfig().contains("Kits." + kitName)) {
+        List<String> kits = Main.getInstance().getConfig().getStringList("Teams." + teamName + ".Kits");
+        kits.remove(kitName);
+        Main.getInstance().getConfig().set("Teams." + teamName + ".Kits", kits);
+        Main.getInstance().saveConfig();
+        sender.sendMessage(ChatColor.GREEN + "Kit " + ChatColor.AQUA + kitName + ChatColor.GREEN + " removed from the team " + ChatColor.AQUA + teamName + ChatColor.GREEN + ". Kits available for that team are: " + ChatColor.AQUA + kits);
 
-            List<String> kits = Main.getInstance().getConfig().getStringList("Teams." + teamName + ".Kits");
-            kits.remove(kitName);
-            Main.getInstance().getConfig().set("Teams." + teamName + ".Kits", kits);
-            Main.getInstance().saveConfig();
-            sender.sendMessage(ChatColor.GREEN + "Kit " + ChatColor.AQUA + kitName + ChatColor.GREEN + " removed from the team " + ChatColor.AQUA + teamName + ChatColor.GREEN + ". Kits available for that team are: " + ChatColor.AQUA + kits);
-
-        }
     }
 
     private void teamAddSpawnLocation(CommandSender sender, String[] args) {
@@ -201,29 +166,13 @@ public class CTFCommand implements CommandExecutor {
         String location = Methods.WriteLocationToString(((Player) sender).getLocation());
         String teamName = args[2];
 
-//        for(Team t : GameManager.getActiveGame().getTeams()){
-//
-//            if(t.getName().equalsIgnoreCase(teamName)){
-//                t.addSpawnLocation(location);
-//            }
-//
-//        }
+        List<String> locations = Main.getInstance().getConfig().getStringList("Teams." + teamName + ".SpawnLocations");
+        locations.add(location);
 
-        if (Main.getInstance().getConfig().contains("Teams." + teamName)) {
+        Main.getInstance().getConfig().set("Teams." + teamName + ".SpawnLocations", locations);
+        Main.getInstance().saveConfig();
+        sender.sendMessage(ChatColor.GREEN + "Spawn location added for team " + ChatColor.AQUA + teamName + ChatColor.GREEN + ".");
 
-            List<String> locations = new ArrayList<>();
-
-            if (Main.getInstance().getConfig().contains("Teams." + teamName + ".SpawnLocations")) {
-                locations = Main.getInstance().getConfig().getStringList("Teams." + teamName + ".SpawnLocations");
-            }
-
-            locations.add(location);
-
-            Main.getInstance().getConfig().set("Teams." + teamName + ".SpawnLocations", locations);
-            Main.getInstance().saveConfig();
-            sender.sendMessage(ChatColor.GREEN + "Spawn location added for team " + ChatColor.AQUA + teamName + ChatColor.GREEN + ".");
-
-        }
     }
 
     private void teamSetDisplayName(CommandSender sender, String[] args) {
@@ -234,22 +183,6 @@ public class CTFCommand implements CommandExecutor {
         Main.getInstance().getConfig().set("Teams." + teamName + ".DisplayName", displayName);
         Main.getInstance().saveConfig();
         sender.sendMessage(ChatColor.translateAlternateColorCodes('&', ChatColor.GREEN + "Display name for team " + ChatColor.AQUA + teamName + ChatColor.GREEN + " set to " + displayName));
-
-    }
-
-    private void teamSetBaseLocation(CommandSender sender, String[] args) {
-
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "This command can only be performed by a player.");
-            return;
-        }
-
-        String teamName = args[2];
-        String location = Methods.WriteLocationToString(((Player) sender).getLocation());
-
-        Main.getInstance().getConfig().set("Teams." + teamName + ".BaseLocation", location);
-        Main.getInstance().saveConfig();
-        sender.sendMessage(ChatColor.GREEN + "Base location for team " + ChatColor.AQUA + teamName + ChatColor.GREEN + " saved.");
 
     }
 
@@ -333,7 +266,9 @@ public class CTFCommand implements CommandExecutor {
             sender.sendMessage(ChatColor.GREEN + "Kit " + ChatColor.AQUA + kitName + ChatColor.GREEN + " deleted.");
 
         } else {
+
             sender.sendMessage(ChatColor.RED + "Kit " + ChatColor.AQUA + kitName + ChatColor.RED + " does not exist.");
+
         }
     }
 
@@ -346,15 +281,10 @@ public class CTFCommand implements CommandExecutor {
 
         String kitName = args[2];
 
-        if (Main.getInstance().getConfig().contains("Kits." + kitName)) {
+        Main.getInstance().getConfig().set("Kits." + kitName + ".Icon", ((Player) sender).getInventory().getItemInMainHand());
+        Main.getInstance().saveConfig();
+        sender.sendMessage(ChatColor.GREEN + "Icon for the kit " + ChatColor.AQUA + kitName + ChatColor.GREEN + " changed.");
 
-            Main.getInstance().getConfig().set("Kits." + kitName + ".Icon", ((Player) sender).getInventory().getItemInMainHand());
-            Main.getInstance().saveConfig();
-            sender.sendMessage(ChatColor.GREEN + "Icon for the kit " + ChatColor.AQUA + kitName + ChatColor.GREEN + " changed.");
-
-        } else {
-            sender.sendMessage(ChatColor.RED + "Kit " + ChatColor.AQUA + kitName + ChatColor.RED + " does not exist.");
-        }
     }
 
     private void kitAddPotionEffect(CommandSender sender, String[] args) {
@@ -363,10 +293,7 @@ public class CTFCommand implements CommandExecutor {
         String kit = args[2];
         String type = args[3];
 
-        List<String> effects = new ArrayList<>();
-        if (Main.getInstance().getConfig().getStringList("Kits." + kit + ".PotionEffects") != null) {
-            effects = Main.getInstance().getConfig().getStringList("Kits." + kit + ".PotionEffects");
-        }
+        List<String> effects = Main.getInstance().getConfig().getStringList("Kits." + kit + ".PotionEffects");
 
         String effect = kit + "|" + type + "|" + amplifier + "|";
         effects.add(effect);
@@ -466,4 +393,32 @@ public class CTFCommand implements CommandExecutor {
         sender.sendMessage(ChatColor.GREEN + "Winner permission set to " + ChatColor.AQUA + permission + ChatColor.GREEN + ".");
 
     }
+
+
+    private void SetDefaultKit(CommandSender sender, String[] args) {
+
+        String kitName = args[1];
+
+        Main.getInstance().getConfig().set("DefaultKit", kitName);
+        Main.getInstance().saveConfig();
+        sender.sendMessage(ChatColor.GREEN + "Kit " + ChatColor.AQUA + kitName + ChatColor.GREEN + " set as the default kit.");
+
+    }
+
+    private void teamSetBaseLocation(CommandSender sender, String[] args) {
+
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.RED + "This command can only be performed by a player.");
+            return;
+        }
+
+        String teamName = args[2];
+        String location = Methods.WriteLocationToString(((Player) sender).getLocation());
+
+        Main.getInstance().getConfig().set("Teams." + teamName + ".BaseLocation", location);
+        Main.getInstance().saveConfig();
+        sender.sendMessage(ChatColor.GREEN + "Base location for team " + ChatColor.AQUA + teamName + ChatColor.GREEN + " saved.");
+
+    }
+
 }
