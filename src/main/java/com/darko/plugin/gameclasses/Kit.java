@@ -16,7 +16,7 @@ public class Kit {
 
     private List<String> availableAbilities = new ArrayList<>();
 
-    private List<PotionEffect> potionEffects = new ArrayList<>();
+    private final List<PotionEffect> potionEffects = new ArrayList<>();
 
 
     public String getInventory() {

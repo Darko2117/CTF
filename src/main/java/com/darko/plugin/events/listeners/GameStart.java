@@ -13,7 +13,6 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -21,11 +20,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -94,10 +91,14 @@ public class GameStart implements Listener {
 
                 StringBuilder reading = new StringBuilder(pot);
 
-                String kitName = reading.substring(0, reading.indexOf("|"));
+//                String kitName = reading.substring(0, reading.indexOf("|"));
                 reading.delete(0, reading.indexOf("|") + 1);
 
                 PotionEffectType type = PotionEffectType.getByName(reading.substring(0, reading.indexOf("|")));
+                if (type == null) {
+                    Main.getInstance().getLogger().warning("Received null for PotionEffectType from config");
+                    continue;
+                }
                 reading.delete(0, reading.indexOf("|") + 1);
 
                 int amplifier = Integer.parseInt(reading.substring(0, reading.indexOf("|")));
@@ -125,7 +126,7 @@ public class GameStart implements Listener {
                 List<String> locationsString = Main.getInstance().getConfig().getStringList("Teams." + s + ".SpawnLocations");
 
                 for (String s1 : locationsString) {
-                    Optional<Location> location = Methods.GetLocationFromString(s1);
+                    Optional<Location> location = Methods.getLocationFromString(s1);
                     if (location.isEmpty())
                         continue;
                     team.addSpawnLocation(location.get());
@@ -167,10 +168,6 @@ public class GameStart implements Listener {
                 if (string == null)
                     return;
                 team.setDisplayName(miniMessage.deserialize(string));
-            }
-
-            if (Main.getInstance().getConfig().contains("Teams." + s + ".Flag")) {
-                team.setFlag(Methods.GetBlockFromString(Main.getInstance().getConfig().getString("Teams." + s + ".Flag")));
             }
 
             if (Main.getInstance().getConfig().contains("Teams." + s + ".Color")) {
@@ -261,15 +258,21 @@ public class GameStart implements Listener {
     }
 
     private void loadFlags(Game game) {
-        for (Team t : game.getTeams()) {
+        for (Team team : game.getTeams()) {
             Flag flag = new Flag();
-            Block flagBlock = Methods.GetBlockFromString(Main.getInstance().getConfig().getString("Teams." + t.getName() + ".Flag"));
+            Optional<Block> optionalBlock = Methods.getBlockFromString(Main.getInstance().getConfig().getString("Teams." + team.getName() + ".Flag"));
+            if (optionalBlock.isEmpty()) {
+                Main.getInstance().getLogger().warning("Received empty block for flag location for team " + team.getName() + ". Skipping team.");
+                continue;
+            }
+
+            Block flagBlock = optionalBlock.get();
 
             flagBlock.getLocation().getWorld().getBlockAt(flagBlock.getLocation()).setType(flagBlock.getType());
             flagBlock.getLocation().getWorld().getBlockAt(flagBlock.getLocation()).setBlockData(flagBlock.getBlockData());
 
             flag.setBlock(flagBlock);
-            flag.setTeam(t);
+            flag.setTeam(team);
             game.addFlag(flag);
         }
 
@@ -282,14 +285,14 @@ public class GameStart implements Listener {
         Integer seconds = Main.getInstance().getConfig().getInt("FlagSecondsNeededForCapture");
         game.setSecondsNeededForCapture(seconds);
 
-        Optional<Location> flagDepositLocation = Methods.GetLocationFromString(Main.getInstance().getConfig().getString("FlagDepositLocation"));
+        Optional<Location> flagDepositLocation = Methods.getLocationFromString(Main.getInstance().getConfig().getString("FlagDepositLocation"));
         if (flagDepositLocation.isEmpty()) {
             System.out.println("ERROR unable to get location from string for FlagDepositLocation");
             return;
         }
         game.setFlagDepositLocation(flagDepositLocation.get());
 
-        Optional<Location> finalRespawnPoint = Methods.GetLocationFromString(Main.getInstance().getConfig().getString("FinalRespawnPoint"));
+        Optional<Location> finalRespawnPoint = Methods.getLocationFromString(Main.getInstance().getConfig().getString("FinalRespawnPoint"));
         if (finalRespawnPoint.isEmpty()) {
             System.out.println("ERROR unable to get location from string for FinalRespawnPoint");
             return;
@@ -366,8 +369,8 @@ public class GameStart implements Listener {
             return;
         }
         optionalGame.get().getParticipants().forEach(participant -> {
-            Methods.TeleportParticipantToOneOfTheSpawnLocations(participant);
-            Methods.OpenKitSelectionUI(participant);
+            Methods.teleportParticipantToOneOfTheSpawnLocations(participant);
+            Methods.openKitSelectionUI(participant);
         });
     }
 

@@ -3,7 +3,6 @@ package com.darko.plugin.gameclasses;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
-import org.bukkit.block.Block;
 import org.bukkit.inventory.Inventory;
 
 import java.util.ArrayList;
@@ -22,8 +21,6 @@ public class Team {
     private Component displayName;
 
     private NamedTextColor color;
-
-    private Block flag;
 
     private Boolean canRespawn;
 
@@ -84,15 +81,6 @@ public class Team {
 
     public void setColor(NamedTextColor color) {
         this.color = color;
-    }
-
-
-    public Block getFlag() {
-        return this.flag;
-    }
-
-    public void setFlag(Block flag) {
-        this.flag = flag;
     }
 
 

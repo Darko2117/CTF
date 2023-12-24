@@ -161,7 +161,7 @@ public class CTFCommand implements CommandExecutor {
             return;
         }
 
-        String location = Methods.WriteLocationToString(((Player) sender).getLocation());
+        String location = Methods.writeLocationToString(((Player) sender).getLocation());
         String teamName = args[2];
 
         List<String> locations = Main.getInstance().getConfig().getStringList("Teams." + teamName + ".SpawnLocations");
@@ -200,7 +200,7 @@ public class CTFCommand implements CommandExecutor {
 
         Block block = senderLocation.getWorld().getBlockAt(senderLocation);
 
-        String blockString = Methods.WriteBlockToString(block);
+        String blockString = Methods.writeBlockToString(block);
 
         Main.getInstance().getConfig().set("Teams." + teamName + ".Flag", blockString);
         Main.getInstance().saveConfig();
@@ -345,7 +345,7 @@ public class CTFCommand implements CommandExecutor {
             return;
         }
 
-        String location = Methods.WriteLocationToString(((Player) sender).getLocation());
+        String location = Methods.writeLocationToString(((Player) sender).getLocation());
 
         Main.getInstance().getConfig().set("FinalRespawnPoint", location);
         Main.getInstance().saveConfig();

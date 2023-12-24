@@ -9,13 +9,11 @@ import java.util.Optional;
 
 public class Game {
 
-    private List<Participant> participants = new ArrayList<>();
+    private final List<Participant> participants = new ArrayList<>();
 
-    List<Team> teams = new ArrayList<>();
+    final List<Team> teams = new ArrayList<>();
 
-    List<Kit> kits = new ArrayList<>();
-
-    Participant flagCarrier;
+    final List<Kit> kits = new ArrayList<>();
 
     private int flagRadius;
 
@@ -23,7 +21,7 @@ public class Game {
 
     private int secondsNeededForCapture;
 
-    private List<Flag> flags = new ArrayList<>();
+    private final List<Flag> flags = new ArrayList<>();
 
     private Location flagDepositLocation;
 
@@ -36,14 +34,6 @@ public class Game {
 
     public List<Participant> getParticipants() {
         return this.participants;
-    }
-
-    public void setParticipants(List<Participant> participants) {
-        this.participants = participants;
-    }
-
-    public void removeParticipant(Participant participant) {
-        this.participants.remove(participant);
     }
 
     public void addParticipant(Participant participant) {
@@ -76,23 +66,8 @@ public class Game {
         return this.kits;
     }
 
-    public Kit getKitByName(String name) {
-        for (Kit k : this.kits) {
-            if (k.getName().equalsIgnoreCase(name)) return k;
-        }
-        return null;
-    }
-
     public void addAvailableKit(Kit kit) {
         if (!this.kits.contains(kit)) this.kits.add(kit);
-    }
-
-    public Participant getFlagCarrier() {
-        return this.flagCarrier;
-    }
-
-    public void setFlagCarrier(Participant flagCarrier) {
-        this.flagCarrier = flagCarrier;
     }
 
 

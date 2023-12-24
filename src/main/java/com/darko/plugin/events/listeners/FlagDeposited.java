@@ -39,7 +39,7 @@ public class FlagDeposited implements Listener {
         losingTeam.setCanRespawn(false);
         game.getFlagFromTeam(losingTeam).ifPresent(flag -> {
             flag.setBlock(flag.getBlock().getLocation().getWorld().getBlockAt(6969, 69, 6969));
-            //TODO delete the flag or something
+            //TODO delete the flag or something if possible
         });
 
 

@@ -12,6 +12,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+@SuppressWarnings("ALL")
 public class Serialization {
 
     /**
@@ -32,7 +33,7 @@ public class Serialization {
     /**
      *
      * A method to serialize an {@link ItemStack} array to Base64 String.
-     *
+     * <p>
      * <p />
      *
      * Based off of {@link #toBase64(Inventory)}.
@@ -50,8 +51,8 @@ public class Serialization {
             dataOutput.writeInt(items.length);
 
             // Save every element in the list
-            for (int i = 0; i < items.length; i++) {
-                dataOutput.writeObject(items[i]);
+            for (ItemStack item : items) {
+                dataOutput.writeObject(item);
             }
 
             // Serialize that array
@@ -64,12 +65,12 @@ public class Serialization {
 
     /**
      * A method to serialize an inventory to Base64 string.
-     *
+     * <p>
      * <p />
      *
      * Special thanks to Comphenix in the Bukkit forums or also known
      * as aadnk on GitHub.
-     *
+     * <p>
      * <a href="https://gist.github.com/aadnk/8138186">Original Source</a>
      *
      * @param inventory to serialize
@@ -100,12 +101,12 @@ public class Serialization {
     /**
      *
      * A method to get an {@link Inventory} from an encoded, Base64, string.
-     *
+     * <p>
      * <p />
      *
      * Special thanks to Comphenix in the Bukkit forums or also known
      * as aadnk on GitHub.
-     *
+     * <p>
      * <a href="https://gist.github.com/aadnk/8138186">Original Source</a>
      *
      * @param data Base64 string of data containing an inventory.
@@ -132,7 +133,7 @@ public class Serialization {
 
     /**
      * Gets an array of ItemStacks from Base64 string.
-     *
+     * <p>
      * <p />
      *
      * Base off of {@link #fromBase64(String)}.

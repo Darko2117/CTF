@@ -8,7 +8,6 @@ import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -67,7 +66,7 @@ public class Checks implements Listener {
                     .filter(flag -> flag.getCarrier() != null)
                     .filter(flag -> flag.getCarrier() == player)
                     .map(Flag::getTeam)
-                    .forEach(Methods::RespawnFlag);
+                    .forEach(Methods::respawnFlag);
         });
     }
 
@@ -91,7 +90,7 @@ public class Checks implements Listener {
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    Methods.OpenKitSelectionUI(participant);
+                    Methods.openKitSelectionUI(participant);
                 }
             }.runTaskLater(Main.getInstance(), 10);
             player.sendMessage(miniMessage.deserialize(
@@ -102,12 +101,12 @@ public class Checks implements Listener {
                 @Override
                 public void run() {
                     if (participant.getTeam().getCanRespawn()) {
-                        Methods.TeleportParticipantToOneOfTheSpawnLocations(participant);
+                        Methods.teleportParticipantToOneOfTheSpawnLocations(participant);
                     } else {
                         player.sendMessage(miniMessage.deserialize("<red><bold>Your team lost the flag in the meantime. You can't respawn anymore.</bold></red>"));
                     }
                 }
-            }.runTaskLater(Main.getInstance(), game.getDeathTimer() * 20);
+            }.runTaskLater(Main.getInstance(), game.getDeathTimer() * 20L);
         } else {
             org.bukkit.scoreboard.Team scoreboardTeam = Bukkit.getServer().getScoreboardManager().getMainScoreboard().getTeam(participant.getTeam().getName());
             if (scoreboardTeam != null)
@@ -125,12 +124,12 @@ public class Checks implements Listener {
         }
 
         Game game = optionalGame.get();
-        game.getParticipantFromPlayer(event.getPlayer()).ifPresent(player -> {
+        game.getParticipantFromPlayer(event.getPlayer()).ifPresent(participant -> {
             game.getFlags().stream()
                     .filter(flag -> flag.getCarrier() != null)
-                    .filter(flag -> flag.getCarrier().getPlayer().equals(player))
+                    .filter(flag -> flag.getCarrier().equals(participant))
                     .map(Flag::getTeam)
-                    .forEach(Methods::RespawnFlag);
+                    .forEach(Methods::respawnFlag);
             event.getPlayer().getInventory().clear();
         });
     }
@@ -203,7 +202,7 @@ public class Checks implements Listener {
             CTFCommandTabComplete.getKitNames().forEach(kitName -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "lp user " + participant.getPlayer().getName() + " permission unset ctf.kit." + kitName));
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "lp user " + participant.getPlayer().getName() + " permission set ctf.kit." + kit.getName());
         }
-        Methods.GivePlayerKitInventory(participant.getPlayer(), participant.getKit());
+        Methods.givePlayerKitInventory(participant.getPlayer(), participant.getKit());
     }
 
     @EventHandler

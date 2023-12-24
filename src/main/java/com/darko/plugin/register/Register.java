@@ -30,6 +30,7 @@ public class Register implements Listener {
         PluginCommand ctf = Main.getInstance().getCommand("ctf");
         if (ctf == null) {
             Main.getInstance().getLogger().severe("Unable to get command shutting the plugin down");
+            //noinspection UnstableApiUsage
             Main.getInstance().setEnabled(false);
             return;
         }

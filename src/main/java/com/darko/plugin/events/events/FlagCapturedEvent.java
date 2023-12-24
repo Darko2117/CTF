@@ -16,10 +16,6 @@ public class FlagCapturedEvent extends Event {
         this.flagOwnerTeam = flagOwnerTeam;
     }
 
-    public static HandlerList getHandlerList() {
-        return HANDLERS;
-    }
-
     public Team getFlagOwnerTeam() {
         return this.flagOwnerTeam;
     }

@@ -31,8 +31,8 @@ import java.util.stream.IntStream;
 public class RepeatingChecks {
 
     static Game game;
-    static BossBar capturingUnavailableBossBar;
-    static BossBar defendingTheFlagCapture;
+    static final BossBar capturingUnavailableBossBar;
+    static final BossBar defendingTheFlagCapture;
     static {
         MiniMessage miniMessage = MiniMessage.miniMessage();
         Component message1 = miniMessage.deserialize("<red><bold>CAPTURING UNAVAILABLE WHILE PLAYERS FROM DIFFERENT TEAMS ARE ON THE FLAG!!!");
@@ -265,7 +265,7 @@ public class RepeatingChecks {
                     flag.setCarrier(null);
                     FlagDepositedEvent event = new FlagDepositedEvent(carrier.getTeam(), flag.getTeam());
                     Bukkit.getPluginManager().callEvent(event);
-                    Methods.GivePlayerKitInventory(carrier.getPlayer(), carrier.getKit());
+                    Methods.givePlayerKitInventory(carrier.getPlayer(), carrier.getKit());
                 });
     }
 

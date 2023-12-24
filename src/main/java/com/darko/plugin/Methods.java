@@ -16,7 +16,9 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 
 public class Methods {
 
@@ -25,7 +27,7 @@ public class Methods {
      *
      * @param team the team whose flag needs to be respawned
      */
-    public static void RespawnFlag(Team team) {
+    public static void respawnFlag(Team team) {
 
         Optional<Game> optionalGame = GameManager.getActiveGame();
         if (optionalGame.isEmpty()) {
@@ -33,7 +35,13 @@ public class Methods {
         }
         Game game = optionalGame.get();
 
-        Block flagBlock = Methods.GetBlockFromString(Main.getInstance().getConfig().getString("Teams." + team.getName() + ".Flag"));
+        Optional<Block> optionalBlock = Methods.getBlockFromString(Main.getInstance().getConfig().getString("Teams." + team.getName() + ".Flag"));
+        if (optionalBlock.isEmpty()) {
+            Main.getInstance().getLogger().severe("Unable to get block from string in respawnFlag");
+            return;
+        }
+
+        Block flagBlock = optionalBlock.get();
 
         flagBlock.getLocation().getWorld().getBlockAt(flagBlock.getLocation()).setType(flagBlock.getType());
         flagBlock.getLocation().getWorld().getBlockAt(flagBlock.getLocation()).setBlockData(flagBlock.getBlockData());
@@ -48,11 +56,11 @@ public class Methods {
         }
     }
 
-    public static void OpenKitSelectionUI(Participant participant) {
+    public static void openKitSelectionUI(Participant participant) {
         participant.getPlayer().openInventory(participant.getTeam().getKitSelectInventory());
     }
 
-    public static String WriteLocationToString(Location location) {
+    public static String writeLocationToString(Location location) {
         String world = location.getWorld().getName();
         String X = String.valueOf(location.getX());
         String Y = String.valueOf(location.getY());
@@ -64,7 +72,7 @@ public class Methods {
 
     }
 
-    public static Optional<Location> GetLocationFromString(String string) {
+    public static Optional<Location> getLocationFromString(String string) {
         StringBuilder string1 = new StringBuilder(string);
 
         String worldName = string1.substring(0, string1.indexOf("|"));
@@ -97,7 +105,7 @@ public class Methods {
         return Optional.of(location);
     }
 
-    public static String WriteBlockToString(Block block) {
+    public static String writeBlockToString(Block block) {
 
         String blockString = "";
 
@@ -112,7 +120,7 @@ public class Methods {
         return blockString;
     }
 
-    public static Block GetBlockFromString(String string) {
+    public static Optional<Block> getBlockFromString(String string) {
         StringBuilder string1 = new StringBuilder(string);
 
         String worldName = string1.substring(0, string1.indexOf("|"));
@@ -130,21 +138,28 @@ public class Methods {
         string1.delete(0, string1.indexOf("|") + 1);
         Z = Z.substring(0, Z.length() - 2);
 
-        String Type = string1.substring(0, string1.indexOf("|"));
+        String type = string1.substring(0, string1.indexOf("|"));
         string1.delete(0, string1.indexOf("|") + 1);
 
         BlockData blockData = Bukkit.getServer().createBlockData(string1.substring(0, string1.indexOf("|")));
         string1.delete(0, string1.indexOf("|") + 1);
+        World world = Bukkit.getWorld(worldName);
+        if (world == null) {
+            return Optional.empty();
+        }
+        Block block = world.getBlockAt(Integer.parseInt(X), Integer.parseInt(Y), Integer.parseInt(Z));
 
-        Block block = Bukkit.getWorld(worldName).getBlockAt(Integer.parseInt(X), Integer.parseInt(Y), Integer.parseInt(Z));
+        Material material = Material.getMaterial(type);
+        if (material == null)
+            return Optional.empty();
 
-        block.setType(Material.getMaterial(Type));
+        block.setType(material);
         block.setBlockData(blockData);
 
-        return block;
+        return Optional.of(block);
     }
 
-    public static void TeleportParticipantToOneOfTheSpawnLocations(Participant participant) {
+    public static void teleportParticipantToOneOfTheSpawnLocations(Participant participant) {
         List<Location> locations = participant.getTeam().getSpawnLocations();
         Random random = new Random();
         Location location = locations.get(random.nextInt(locations.size()));
@@ -156,15 +171,16 @@ public class Methods {
         }.runTaskAsynchronously(Main.getInstance());
     }
 
-    public static void GivePlayerKitInventory(Player player, Kit kit) {
+    public static void givePlayerKitInventory(Player player, Kit kit) {
         PlayerInventory inventory = player.getInventory();
         ItemStack[] contents = new ItemStack[41];
         try {
             contents = Serialization.itemStackArrayFromBase64(kit.getInventory());
         } catch (IOException e) {
-            Main.getInstance().getLogger().throwing(Methods.class.getName(), "GivePlayerKitInventory", e);
+            Main.getInstance().getLogger().throwing(Methods.class.getName(), "givePlayerKitInventory", e);
         }
         inventory.setContents(contents);
+        //noinspection UnstableApiUsage
         player.updateInventory();
     }
 

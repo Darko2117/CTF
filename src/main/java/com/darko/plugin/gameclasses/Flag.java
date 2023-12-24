@@ -13,7 +13,7 @@ public class Flag {
 
     private Team team;
 
-    private List<Participant> participantsInCaptureRange = new ArrayList<>();
+    private final List<Participant> participantsInCaptureRange = new ArrayList<>();
 
     private Boolean canBeCaptured;
 
