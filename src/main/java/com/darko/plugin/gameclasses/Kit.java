@@ -8,15 +8,15 @@ import java.util.List;
 
 public class Kit {
 
-    String inventory;
+    private String inventory;
 
-    String name;
+    private String name;
 
-    ItemStack icon;
+    private ItemStack icon;
 
-    List<String> availableAbilities = new ArrayList<>();
+    private List<String> availableAbilities = new ArrayList<>();
 
-    List<PotionEffect> potionEffects = new ArrayList<>();
+    private List<PotionEffect> potionEffects = new ArrayList<>();
 
 
     public String getInventory() {
@@ -57,10 +57,6 @@ public class Kit {
 
     public List<PotionEffect> getPotionEffects() {
         return potionEffects;
-    }
-
-    public void setPotionEffects(List<PotionEffect> potionEffects) {
-        this.potionEffects = potionEffects;
     }
 
     public void addPotionEffect(PotionEffect potionEffect){this.potionEffects.add(potionEffect);}

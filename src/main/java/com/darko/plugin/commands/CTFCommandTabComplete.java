@@ -1,96 +1,65 @@
 package com.darko.plugin.commands;
 
 import com.darko.plugin.Main;
-import org.bukkit.ChatColor;
+import com.darko.plugin.commands.command_enums.CTFCommands;
+import com.darko.plugin.commands.command_enums.KitCommands;
+import com.darko.plugin.commands.command_enums.TeamCommands;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.potion.PotionEffectType;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CTFCommandTabComplete implements TabCompleter {
+    
+    private final static List<String> VALID_SUB_COMMANDS_THREE_ARGS = Arrays.asList("delete", "seticon", "addkit", "removekit", "addspawnlocation", "setdisplayname", "setcolor", "setflaglocation", "addpotioneffect");
+    private final static List<String> VALID_SUB_COMMANDS_FOUR_ARGS = Arrays.asList("addkit", "removekit", "addpotioneffect");
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if (sender.hasPermission("ctf.admin")) {
-            if (args.length == 1) {
-
-                return getStartsWithList(getCTFCommands(), args[0]);
-
-            } else if (args.length == 2 && args[0].equalsIgnoreCase("kit")) {
-
-                return getStartsWithList(getKitCommands(), args[1]);
-
-            } else if (args.length == 2 && args[0].equalsIgnoreCase("team")) {
-
-                return getStartsWithList(getTeamCommands(), args[1]);
-
-            } else if (args.length == 3 && args[0].equalsIgnoreCase("kit") && args[1].equalsIgnoreCase("delete")) {
-
-                return getStartsWithList(getKitNames(), args[2]);
-
-            } else if (args.length == 3 && args[0].equalsIgnoreCase("kit") && args[1].equalsIgnoreCase("seticon")) {
-
-                return getStartsWithList(getKitNames(), args[2]);
-
-            } else if (args.length == 3 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("delete")) {
-
-                return getStartsWithList(getTeamNames(), args[2]);
-
-            } else if (args.length == 3 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("addkit")) {
-
-                return getStartsWithList(getTeamNames(), args[2]);
-
-            } else if (args.length == 4 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("addkit")) {
-
-                return getStartsWithList(getKitNames(), args[3]);
-
-            } else if (args.length == 3 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("removekit")) {
-
-                return getStartsWithList(getTeamNames(), args[2]);
-
-            } else if (args.length == 4 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("removekit")) {
-
-                return getStartsWithList(getKitNames(), args[3]);
-
-            } else if (args.length == 3 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("addspawnlocation")) {
-
-                return getStartsWithList(getTeamNames(), args[2]);
-
-            } else if (args.length == 2 && args[0].equalsIgnoreCase("setdefaultkit")) {
-
-                return getStartsWithList(getKitNames(), args[1]);
-
-            } else if (args.length == 3 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("setdisplayname")) {
-
-                return getStartsWithList(getTeamNames(), args[2]);
-
-            } else if (args.length == 3 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("setcolor")) {
-
-                return getStartsWithList(getTeamNames(), args[2]);
-
-            } else if (args.length == 3 && args[0].equalsIgnoreCase("team") && args[1].equalsIgnoreCase("setflaglocation")) {
-
-                return getStartsWithList(getTeamNames(), args[2]);
-
-            } else if (args.length == 3 && args[0].equalsIgnoreCase("kit") && args[1].equalsIgnoreCase("addpotioneffect")) {
-
-                return getStartsWithList(getKitNames(), args[2]);
-
-            } else if (args.length == 4 && args[0].equalsIgnoreCase("kit") && args[1].equalsIgnoreCase("addpotioneffect")) {
-
-                List<String> effects = new ArrayList<>();
-
-                for (PotionEffectType p : PotionEffectType.values()) {
-                    effects.add(p.getName());
-                }
-
-                return getStartsWithList(effects, args[3]);
-
-            }
+        if (!sender.hasPermission("ctf.admin")) {
+            return null;
         }
-        return null;
+        int argLength = args.length;
+        String firstArg = argLength > 0 ? args[0].toLowerCase() : "";
+        String secondArg = argLength > 1 ? args[1].toLowerCase() : "";
+        String thirdArg = argLength > 2 ? args[2] : "";
+        String fourthArg = argLength > 3 ? args[3] : "";
+
+        if (argLength == 1) {
+            return getStartsWithList(getCTFCommands(), firstArg);
+        }
+        
+        if (argLength == 2) {
+            return switch (firstArg) {
+                case "kit" -> getStartsWithList(getKitCommands(), secondArg);
+                case "team" -> getStartsWithList(getTeamCommands(), secondArg);
+                case "setdefaultkit" -> getStartsWithList(getKitNames(), secondArg);
+                default -> List.of();
+            };
+        }
+        
+        if (argLength >= 3 && VALID_SUB_COMMANDS_THREE_ARGS.contains(secondArg)) {
+            return getStartsWithList(firstArg.equals("kit") ? getKitNames() : getTeamNames(), thirdArg);
+        }
+        
+        if (argLength == 4 && VALID_SUB_COMMANDS_FOUR_ARGS.contains(secondArg)) {
+            if (secondArg.equals("addpotioneffect") && firstArg.equals("kit")) {
+                List<String> effects = Stream.of(PotionEffectType.values())
+                        .map(PotionEffectType::getName)
+                        .collect(Collectors.toList());
+                return getStartsWithList(effects, fourthArg);
+            }
+            return getStartsWithList(getKitNames(), fourthArg);
+        }
+
+        return List.of();
     }
 
     public static List<String> getStartsWithList(List<String> list, String startsWith){
@@ -106,126 +75,76 @@ public class CTFCommandTabComplete implements TabCompleter {
     }
 
     public static List<String> getCTFCommands() {
-
-        List<String> commands = new ArrayList<>();
-
-        commands.add("start");
-        commands.add("stop");
-        commands.add("reload");
-        commands.add("configreload");
-        commands.add("kit");
-        commands.add("team");
-        commands.add("setdefaultkit");
-        commands.add("setflagdepositlocation");
-        commands.add("setflagradius");
-        commands.add("setflagparticlecount");
-        commands.add("setsecondsneededforcapture");
-        //commands.add("setpointsneededtowin");
-        commands.add("setfinalrespawnpoint");
-        commands.add("setdeathtimer");
-        commands.add("setwinnerpermission");
-
-        return commands;
-
+        return Arrays.stream(CTFCommands.values()).map(CTFCommands::getCommand).collect(Collectors.toList());
     }
 
     public static List<String> getKitCommands() {
-
-        List<String> commands = new ArrayList<>();
-
-        commands.add("create");
-        commands.add("delete");
-        commands.add("seticon");
-        commands.add("addpotioneffect");
-
-        return commands;
-
+        return Arrays.stream(KitCommands.values()).map(KitCommands::getCommand).collect(Collectors.toList());
     }
 
     public static List<String> getTeamCommands() {
-
-        List<String> commands = new ArrayList<>();
-
-        commands.add("create");
-        commands.add("delete");
-        commands.add("addkit");
-        commands.add("removekit");
-        commands.add("addspawnlocation");
-        commands.add("setdisplayname");
-        //commands.add("setbaselocation");
-        commands.add("setcolor");
-        commands.add("setflaglocation");
-
-        return commands;
-
+        return Arrays.stream(TeamCommands.values()).map(TeamCommands::getCommand).collect(Collectors.toList());
     }
 
     public static List<String> getTeamNames() {
-
-        List<String> completions = new ArrayList<>();
-
-        for (String s : Main.getInstance().getConfig().getKeys(true)) {
-            if (s.startsWith("Teams.")) {
-                s = s.substring(6);
-                if (s.contains(".")) {
-                    s = s.substring(0, s.indexOf("."));
-                }
-                if (!completions.contains(s)) completions.add(s);
-            }
-        }
-
-        return completions;
-
+        return Main.getInstance().getConfig().getKeys(true).stream()
+                .filter(s -> s.startsWith("Teams."))
+                .map(s -> {
+                    s = s.substring(6);
+                    if (s.contains(".")) {
+                        s = s.substring(0, s.indexOf("."));
+                    }
+                    return s;
+                })
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     public static List<String> getKitNames() {
-
-        List<String> completions = new ArrayList<>();
-
-        for (String s : Main.getInstance().getConfig().getKeys(true)) {
-            if (s.startsWith("Kits.")) {
-                s = s.substring(5);
-                if (s.contains(".")) {
-                    s = s.substring(0, s.indexOf("."));
-                }
-                if (!completions.contains(s)) completions.add(s);
-            }
-        }
-
-        return completions;
-
+        return Main.getInstance().getConfig().getKeys(true).stream()
+                .filter(s -> s.startsWith("Kits."))
+                .map(s -> s.substring(5))
+                .map(s -> s.contains(".") ? s.substring(0, s.indexOf(".")) : s)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     public static void invalidUsageMessageCTFCommands(CommandSender sender) {
-        sender.sendMessage(ChatColor.RED + "Invalid usage. Possible commands:");
-        for (String s : getCTFCommands()) {
-            sender.sendMessage(ChatColor.RED + "/ctf " + s);
+        MiniMessage miniMessage = MiniMessage.miniMessage();
+        Component message = miniMessage.deserialize("<red>Invalid usage. Possible commands:</red>");
+        for (String command : getCTFCommands()) {
+            message = message
+                    .append(Component.newline())
+                    .append(miniMessage.deserialize("<yellow>/ctf <command></yellow>", Placeholder.parsed("command", command)));
         }
+        sender.sendMessage(message);
     }
 
     public static void invalidUsageMessageKitCommands(CommandSender sender) {
-        sender.sendMessage(ChatColor.RED + "Invalid usage. Possible commands:");
-        for (String s : getKitCommands()) {
-            if (s.equals("create") || s.equals("delete") || s.equals("seticon")) {
-                sender.sendMessage(ChatColor.RED + "/ctf kit " + s + " [name]");
-            }
+        MiniMessage miniMessage = MiniMessage.miniMessage();
+        Component message = miniMessage.deserialize("<red>Invalid usage. Possible commands:</red>");
+        for (String command : getKitCommands()) {
+            message = message
+                    .append(Component.newline())
+                    .append(miniMessage.deserialize("<yellow>/ctf kit <command> [name]</yellow>", Placeholder.parsed("command", command)));
         }
+        sender.sendMessage(message);
     }
 
     public static void invalidUsageMessageTeamCommands(CommandSender sender) {
-        sender.sendMessage(ChatColor.RED + "Invalid usage. Possible commands:");
-        for (String s : getTeamCommands()) {
-            if (s.equals("addkit") || s.equals("removekit")) {
-                sender.sendMessage(ChatColor.RED + "/ctf team " + s + " [team-name] [kit-name]");
-            } else if (s.equals("setdisplayname")) {
-                sender.sendMessage(ChatColor.RED + "/ctf team " + s + " [team-name] [display-name]");
-            } else if (s.equals("setbaselocation")) {
-                sender.sendMessage(ChatColor.RED + "/ctf team " + s + " [team-name] [display-name]");
-            } else {
-                sender.sendMessage(ChatColor.RED + "/ctf team " + s);
-            }
+        MiniMessage miniMessage = MiniMessage.miniMessage();
+        Component message = miniMessage.deserialize("<red>Invalid usage. Possible commands:</red>");
+        for (String command : getTeamCommands()) {
+            message = message.append(Component.newline());
+            message = switch (command) {
+                case "addkit", "removekit" -> message
+                        .append(miniMessage.deserialize("<yellow>/ctf team <command> [team-name] [kit-name]</yellow>", Placeholder.parsed("command", command)));
+                case "setdisplayname", "setbaselocation" -> message
+                        .append(miniMessage.deserialize("<yellow>/ctf team <command> [team-name] [display-name]</yellow>", Placeholder.parsed("command", command)));
+                default ->
+                        message.append(miniMessage.deserialize("<yellow>/ctf team <command></yellow>", Placeholder.parsed("command", command)));
+            };
         }
+        sender.sendMessage(message);
     }
-
-
 }

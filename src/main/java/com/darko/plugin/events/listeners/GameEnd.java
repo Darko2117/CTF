@@ -3,33 +3,38 @@ package com.darko.plugin.events.listeners;
 import com.darko.plugin.events.events.GameEndEvent;
 import com.darko.plugin.gameclasses.Game;
 import com.darko.plugin.gameclasses.GameManager;
-import com.darko.plugin.gameclasses.Participant;
 import com.darko.plugin.gameclasses.Team;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
+import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.jetbrains.annotations.NotNull;
+
+import java.time.Duration;
 
 public class GameEnd implements Listener {
 
     @EventHandler
-    public void onGameEnd(GameEndEvent e) {
-
-        Game game = e.getGame();
+    public void onGameEnd(@NotNull GameEndEvent gameEndEvent) {
+        Game game = gameEndEvent.getGame();
 
         Team winningTeam = game.getTeams().get(0);
+        MiniMessage miniMessage = MiniMessage.miniMessage();
+        String formattedMessage = "<aqua><team></aqua><gold><bold> WON!!!</bold></gold>";
 
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            p.sendTitle(ChatColor.translateAlternateColorCodes('&', winningTeam.getDisplayName()) + ChatColor.GOLD + "" + ChatColor.BOLD + " WON!!!", "They are the last team standing!", 5, 200, 40);
-        }
+        Title title = Title.title(
+                miniMessage.deserialize(formattedMessage, Placeholder.component("team", winningTeam.getDisplayName())),
+                miniMessage.deserialize("<dark_aqua>They are the last team standing!</dark_aqua>"),
+                Title.Times.times(Duration.ofMillis(250), Duration.ofSeconds(20), Duration.ofMillis(250)));
+        Bukkit.getOnlinePlayers().forEach(player -> player.showTitle(title));
 
         GameManager.setActiveGame(null);
 
-        for (Participant p : game.getParticipants()) {
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "lp user " + p.getPlayer().getName() + " permission set " + game.getWinnerPermission());
-        }
-
+        game.getParticipants().forEach(player ->
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "lp user " + player.getPlayer().getName() + " permission set " + game.getWinnerPermission())
+        );
     }
 
 }

@@ -5,10 +5,11 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class Game {
 
-    List<Participant> participants = new ArrayList<>();
+    private List<Participant> participants = new ArrayList<>();
 
     List<Team> teams = new ArrayList<>();
 
@@ -16,23 +17,21 @@ public class Game {
 
     Participant flagCarrier;
 
-    Integer flagRadius;
+    private int flagRadius;
 
-    Integer flagParticleCount;
+    private int flagParticleCount;
 
-    Integer secondsNeededForCapture;
+    private int secondsNeededForCapture;
 
-    Integer pointsNeededToWin;
+    private List<Flag> flags = new ArrayList<>();
 
-    List<Flag> flags = new ArrayList<>();
+    private Location flagDepositLocation;
 
-    Location flagDepositLocation;
+    private Location finalRespawnLocation;
 
-    Location finalRespawnLocation;
+    private int deathTimer;
 
-    Integer deathTimer;
-
-    String winnerPermission;
+    private String winnerPermission;
 
 
     public List<Participant> getParticipants() {
@@ -51,13 +50,8 @@ public class Game {
         this.participants.add(participant);
     }
 
-    public Participant getParticipantFromPlayer(Player player) {
-        for (Participant p : this.participants) {
-            if (p.getPlayer().equals(player)) {
-                return p;
-            }
-        }
-        return null;
+    public Optional<Participant> getParticipantFromPlayer(Player player) {
+        return this.participants.stream().filter(participant -> participant.getPlayer().equals(player)).findFirst();
     }
 
     public void clearParticipants() {
@@ -69,15 +63,13 @@ public class Game {
         return this.teams;
     }
 
-    public void setTeams(List<Team> teams) {
-        this.teams = teams;
-    }
-
     public void addTeam(Team team) {
         this.teams.add(team);
     }
 
-    public void removeTeam(Team team) {this.teams.remove(team);}
+    public void removeTeam(Team team) {
+        this.teams.remove(team);
+    }
 
 
     public List<Kit> getKits() {
@@ -91,14 +83,9 @@ public class Game {
         return null;
     }
 
-    public void setAvailableKits(List<Kit> kits) {
-        this.kits = kits;
-    }
-
     public void addAvailableKit(Kit kit) {
         if (!this.kits.contains(kit)) this.kits.add(kit);
     }
-
 
     public Participant getFlagCarrier() {
         return this.flagCarrier;
@@ -109,16 +96,7 @@ public class Game {
     }
 
 
-//    public Block getFlag() {
-//        return this.flag;
-//    }
-//
-//    public void setFlag(Block flag) {
-//        this.flag = flag;
-//    }
-
-
-    public Integer getFlagRadius() {
+    public int getFlagRadius() {
         return this.flagRadius;
     }
 
@@ -127,7 +105,7 @@ public class Game {
     }
 
 
-    public Integer getFlagParticleCount() {
+    public int getFlagParticleCount() {
         return this.flagParticleCount;
     }
 
@@ -136,7 +114,7 @@ public class Game {
     }
 
 
-    public Integer getSecondsNeededForCapture() {
+    public int getSecondsNeededForCapture() {
         return this.secondsNeededForCapture;
     }
 
@@ -145,30 +123,12 @@ public class Game {
     }
 
 
-    public Integer getPointsNeededToWin() {
-        return this.pointsNeededToWin;
-    }
-
-    public void setPointsNeededToWin(Integer pointsNeededToWin) {
-        this.pointsNeededToWin = pointsNeededToWin;
-    }
-
-
     public List<Flag> getFlags() {
         return this.flags;
     }
 
-    public void setFlags(List<Flag> flags) {
-        this.flags = flags;
-    }
-
-    public Flag getFlagFromTeam(Team team) {
-        for (Flag f : flags) {
-            if (f.getTeam().equals(team)) {
-                return f;
-            }
-        }
-        return null;
+    public Optional<Flag> getFlagFromTeam(Team team) {
+        return flags.stream().filter(flag -> flag.getTeam().equals(team)).findAny();
     }
 
     public void addFlag(Flag flag){this.flags.add(flag);}
@@ -191,8 +151,7 @@ public class Game {
         this.finalRespawnLocation = finalRespawnLocation;
     }
 
-
-    public Integer getDeathTimer() {
+    public int getDeathTimer() {
         return deathTimer;
     }
 

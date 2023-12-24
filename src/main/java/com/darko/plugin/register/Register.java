@@ -5,12 +5,12 @@ import com.darko.plugin.events.listeners.*;
 import com.darko.plugin.commands.CTFCommand;
 import com.darko.plugin.commands.CTFCommandTabComplete;
 import com.darko.plugin.Main;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.event.Listener;
 
 public class Register implements Listener {
 
     public static void RegisterEvents() {
-
         registerEvents(
                 new GameStart(),
                 new FlagCaptured(),
@@ -18,7 +18,6 @@ public class Register implements Listener {
                 new GameEnd(),
                 new Checks()
         );
-
     }
 
     private static void registerEvents(Listener... listeners) {
@@ -28,7 +27,13 @@ public class Register implements Listener {
     }
 
     public static void RegisterCommands() {
-        Main.getInstance().getCommand("ctf").setExecutor(new CTFCommand());
-        Main.getInstance().getCommand("ctf").setTabCompleter(new CTFCommandTabComplete());
+        PluginCommand ctf = Main.getInstance().getCommand("ctf");
+        if (ctf == null) {
+            Main.getInstance().getLogger().severe("Unable to get command shutting the plugin down");
+            Main.getInstance().setEnabled(false);
+            return;
+        }
+        ctf.setExecutor(new CTFCommand());
+        ctf.setTabCompleter(new CTFCommandTabComplete());
     }
 }

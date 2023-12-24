@@ -3,10 +3,13 @@ package com.darko.plugin.events.events;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.NotNull;
 
 public class GameStartEvent extends Event {
 
-    CommandSender starter;
+    private static final HandlerList HANDLERS = new HandlerList();
+    private final CommandSender starter;
+
 
     public GameStartEvent(CommandSender sender) {
         this.starter = sender;
@@ -16,15 +19,8 @@ public class GameStartEvent extends Event {
         return this.starter;
     }
 
-
-    private static final HandlerList HANDLERS = new HandlerList();
-
-    public static HandlerList getHandlerList() {
-        return HANDLERS;
-    }
-
     @Override
-    public HandlerList getHandlers() {
+    public @NotNull HandlerList getHandlers() {
         return HANDLERS;
     }
 
