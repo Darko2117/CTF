@@ -10,6 +10,10 @@ public class GameEndEvent extends Event {
     private static final HandlerList HANDLERS = new HandlerList();
     private final Game game;
 
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
+    }
+
     public GameEndEvent(Game game) {
         this.game = game;
     }

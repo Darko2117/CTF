@@ -11,6 +11,10 @@ public class FlagCapturedEvent extends Event {
     private final Team capturingTeam;
     private final Team flagOwnerTeam;
 
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
+    }
+
     public FlagCapturedEvent(Team capturingTeam, Team flagOwnerTeam) {
         this.capturingTeam = capturingTeam;
         this.flagOwnerTeam = flagOwnerTeam;

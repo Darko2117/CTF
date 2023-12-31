@@ -10,6 +10,10 @@ public class FlagDepositedEvent extends Event {
     private final Team scoringTeam;
     private final Team losingTeam;
 
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
+    }
+
     public FlagDepositedEvent(Team scoringTeam, Team losingTeam) {
         this.scoringTeam = scoringTeam;
         this.losingTeam = losingTeam;
