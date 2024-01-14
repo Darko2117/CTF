@@ -9,19 +9,19 @@ import java.util.List;
 
 public class Flag {
 
-    Block block;
+    private Block block;
 
-    Team team;
+    private Team team;
 
-    List<Participant> participantsInCaptureRange = new ArrayList<>();
+    private final List<Participant> participantsInCaptureRange = new ArrayList<>();
 
-    Boolean canBeCaptured;
+    private Boolean canBeCaptured;
 
-    HashMap<Participant, Integer> participantsCapturingTheFlag = new HashMap<>();
+    private HashMap<Participant, Integer> participantsCapturingTheFlag = new HashMap<>();
 
-    Participant carrier;
+    private Participant carrier;
 
-    BossBar capturingProgressBossBar;
+    private BossBar capturingProgressBossBar;
 
 
     public Block getBlock() {
@@ -44,10 +44,6 @@ public class Flag {
 
     public List<Participant> getParticipantsInCaptureRange() {
         return this.participantsInCaptureRange;
-    }
-
-    public void setParticipantsInCaptureRange(List<Participant> participants) {
-        this.participantsInCaptureRange = participants;
     }
 
     public void addParticipantInCaptureRange(Participant participant) {

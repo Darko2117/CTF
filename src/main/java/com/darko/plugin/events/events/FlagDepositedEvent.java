@@ -3,33 +3,34 @@ package com.darko.plugin.events.events;
 import com.darko.plugin.gameclasses.Team;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.NotNull;
 
 public class FlagDepositedEvent extends Event {
 
-    Team teamWhoDepositedTheFlag;
-    Team teamWhosFlagWasDeposited;
-
-    public FlagDepositedEvent(Team teamWhoDepositedTheFlag, Team teamWhosFlagWasDeposited) {
-        this.teamWhoDepositedTheFlag = teamWhoDepositedTheFlag;
-        this.teamWhosFlagWasDeposited = teamWhosFlagWasDeposited;
-    }
-
-    public Team getTeamWhoDepositedTheFlag() {
-        return this.teamWhoDepositedTheFlag;
-    }
-
-    public Team getTeamWhosFlagWasDeposited() {
-        return this.teamWhosFlagWasDeposited;
-    }
-
-    private static final HandlerList HANDLERS = new HandlerList();
+    private final Team scoringTeam;
+    private final Team losingTeam;
 
     public static HandlerList getHandlerList() {
         return HANDLERS;
     }
 
+    public FlagDepositedEvent(Team scoringTeam, Team losingTeam) {
+        this.scoringTeam = scoringTeam;
+        this.losingTeam = losingTeam;
+    }
+
+    public Team getScoringTeam() {
+        return this.scoringTeam;
+    }
+
+    public Team getLosingTeam() {
+        return this.losingTeam;
+    }
+
+    private static final HandlerList HANDLERS = new HandlerList();
+
     @Override
-    public HandlerList getHandlers() {
+    public @NotNull HandlerList getHandlers() {
         return HANDLERS;
     }
 

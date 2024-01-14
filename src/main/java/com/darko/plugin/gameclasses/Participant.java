@@ -4,11 +4,11 @@ import org.bukkit.entity.Player;
 
 public class Participant {
 
-    Player player;
+    private Player player;
 
-    Team team;
+    private Team team;
 
-    Kit kit;
+    private Kit kit;
 
 
     public Player getPlayer() {
